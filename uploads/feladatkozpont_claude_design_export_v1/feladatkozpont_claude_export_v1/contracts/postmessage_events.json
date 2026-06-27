@@ -1,0 +1,35 @@
+{
+  "incoming_to_frontend": {
+    "task_center_set_tasks": {
+      "description": "Parent/Retool sends visible task cards to dashboard.",
+      "payload": { "tasks": [] }
+    },
+    "task_center_set_users": {
+      "description": "Parent/Retool sends board member list to dashboard.",
+      "payload": { "users": [] }
+    },
+    "task_center_set_context": {
+      "description": "Optional current user / board / permissions context.",
+      "payload": {
+        "board_code": "main_user_dashboard",
+        "current_user_key": "me",
+        "view_mode": "mine|team|all"
+      }
+    }
+  },
+  "outgoing_from_frontend": {
+    "task_center_ready": "Dashboard loaded and bridge is ready.",
+    "task_center_select": "User selected a card.",
+    "task_center_status_change": "Card moved to another column/status.",
+    "task_center_update_field": "Single field changed from side panel.",
+    "task_center_create_task": "New manual task created.",
+    "task_center_update_task": "Task edited in modal.",
+    "task_center_comment": "Comment added to task.",
+    "task_center_notify": "Notification requested/prepared.",
+    "task_center_open_source": "User wants to open original source record.",
+    "task_center_queue_agent": "User requested AI/agent action.",
+    "task_center_bulk_status_change": "Multiple selected cards moved.",
+    "task_center_user_filter": "User clicked board member filter.",
+    "task_center_view_change": "User changed top tab/view."
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "description": "Board member / user monogram stack payload.",
+  "fields": {
+    "user_id": "uuid string",
+    "email": "string|null",
+    "name": "display name",
+    "initials": "2-3 letter monogram",
+    "color": "hex avatar color",
+    "avatar_url": "optional image URL",
+    "role": "owner|manager|member|viewer|custom",
+    "online": "boolean from realtime presence or false fallback",
+    "can_view": "boolean",
+    "can_create": "boolean",
+    "can_edit_all": "boolean",
+    "can_manage_board": "boolean",
+    "sort_order": "number"
+  },
+  "ui_notes": [
+    "Top right should show first 4 users as overlapping avatars plus +N.",
+    "Click opens Board tagok drawer.",
+    "Click user filters board by assignee_user_id.",
+    "No chat/messages feature."
+  ]
+}

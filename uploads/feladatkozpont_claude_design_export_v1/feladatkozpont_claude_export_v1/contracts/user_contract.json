@@ -1,0 +1,20 @@
+{
+  "board_user": {
+    "id": "external user key or uuid",
+    "member_id": "uuid|null",
+    "name": "Display name",
+    "initials": "2-3 character monogram",
+    "email": "optional",
+    "avatar_url": "optional",
+    "color": "#193b69",
+    "role": "Board member / Jóváhagyó / Manager / Viewer / Agent",
+    "permission_level": "owner|admin|manager|member|viewer|agent",
+    "online": true,
+    "last_seen_at": "ISO timestamp|null"
+  },
+  "frontend_usage": {
+    "top_right_stack": "show first 4 users + +N extra",
+    "drawer": "show all board members, allow filtering by user",
+    "task_assignee_select": "use same users list"
+  }
+}

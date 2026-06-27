@@ -1,0 +1,31 @@
+[
+  {
+    "id": "T-1001",
+    "title": "Minta feladat: új ügy ellenőrzése",
+    "module": "case",
+    "status": "new",
+    "priority": "critical",
+    "assignee": "me",
+    "due": "Ma 10:00",
+    "source_type": "case",
+    "source_id": "SRC-001",
+    "desc": "Placeholder kártya. Később bármelyik Supabase rekordból automatikusan jöhet ilyen feladat.",
+    "tags": ["új", "ellenőrzés"],
+    "progress": 30,
+    "ai": false
+  },
+  {
+    "id": "T-1005",
+    "title": "AI: ellenőrző lista előkészítése",
+    "module": "ai",
+    "status": "ai_preparing",
+    "priority": "normal",
+    "assignee": "me",
+    "due": "Ma 17:00",
+    "source_type": "agent_job",
+    "source_id": "SRC-005",
+    "tags": ["AI", "agent"],
+    "progress": 40,
+    "ai": true
+  }
+]

@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-adapter.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: #eef0f3; font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .tc-scroll::-webkit-scrollbar { width: 9px; height: 9px; }
+  .tc-scroll::-webkit-scrollbar-thumb { background: #d3d7de; border-radius: 6px; border: 2px solid transparent; background-clip: padding-box; }
+  .tc-scroll::-webkit-scrollbar-thumb:hover { background: #b9bec7; background-clip: padding-box; }
+  .tc-scroll::-webkit-scrollbar-track { background: transparent; }
+  @keyframes tcFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes tcPop { 0% { transform: scale(.9); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+  @keyframes tcSpin { to { transform: rotate(360deg); } }
+  @keyframes tcPulse { 0% { box-shadow: 0 0 0 0 rgba(216,69,69,.55); } 70% { box-shadow: 0 0 0 7px rgba(216,69,69,0); } 100% { box-shadow: 0 0 0 0 rgba(216,69,69,0); } }
+  @keyframes tcRing { 0%,100% { transform: rotate(0); } 15% { transform: rotate(13deg); } 30% { transform: rotate(-11deg); } 45% { transform: rotate(8deg); } 60% { transform: rotate(-6deg); } 75% { transform: rotate(3deg); } }
+  @keyframes tcSheen { to { background-position: 200% 0; } }
+  .tc-clone { transition: box-shadow .15s; }
+</style>
+</helmet>
+
+<div ref="{{ rootRef }}" class="tc-scroll" style="display:flex; flex-direction:column; height:100vh; overflow:hidden; color:#17181c;">
+
+  <!-- ============ HEADER ============ -->
+  <div style="flex:0 0 auto; background:#fff; border-bottom:1px solid #e3e5ea; padding:0 20px; height:60px; display:flex; align-items:center; gap:16px; z-index:30;">
+    <img src="assets/hddirekt-logo.png" alt="HD Direkt" style="height:26px; width:auto;">
+    <div style="width:1px; height:26px; background:#e8eaee;"></div>
+    <div style="position:relative; flex:1; max-width:480px;">
+      <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:14px; height:14px; border:1.8px solid #b3b8c0; border-radius:50%;"></span>
+      <span style="position:absolute; left:23px; top:calc(50% + 5px); width:7px; height:1.8px; background:#b3b8c0; transform:rotate(45deg); transform-origin:left;"></span>
+      <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Keresés a feladatok közt…" style="width:100%; height:36px; background:#f5f6f8; border:1px solid #e8eaee; border-radius:9px; padding:0 12px 0 34px; font:500 13px 'Inter'; color:#17181c; outline:none;" style-focus="border-color:#f8b65a; background:#fff; box-shadow:0 0 0 3px rgba(248,153,28,.12);">
+    </div>
+    <div style="flex:1;"></div>
+
+    <!-- members stack -->
+    <div onClick="{{ openMembers }}" style="display:flex; align-items:center; cursor:pointer; padding:4px; border-radius:10px;" style-hover="background:#f5f6f8;" title="Board tagok">
+      <sc-for list="{{ memberStack }}" as="ms" hint-placeholder-count="3">
+        <div style="{{ ms.style }}">{{ ms.initials }}<span style="{{ ms.dot }}"></span></div>
+      </sc-for>
+      <sc-if value="{{ hasExtra }}" hint-placeholder-val="{{ true }}">
+        <div style="width:30px; height:30px; border-radius:50%; background:#eceef1; color:#6d717a; font:600 10px 'Inter'; display:flex; align-items:center; justify-content:center; border:2px solid #fff; margin-left:-9px;">+{{ memberExtra }}</div>
+      </sc-if>
+    </div>
+
+    <!-- notifications bell -->
+    <div onClick="{{ openNotif }}" style="position:relative; width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer;" style-hover="background:#f5f6f8;" title="Értesítések">
+      <span style="{{ bellStyle }}">
+        <span style="display:block; width:15px; height:15px; border:2px solid #4a4f59; border-bottom:none; border-radius:9px 9px 0 0;"></span>
+        <span style="display:block; width:19px; height:2px; background:#4a4f59; border-radius:2px; margin-top:1px;"></span>
+        <span style="display:block; width:6px; height:4px; border:2px solid #4a4f59; border-top:none; border-radius:0 0 6px 6px; margin:1px auto 0;"></span>
+      </span>
+      <sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ true }}">
+        <span style="position:absolute; top:5px; right:6px; min-width:16px; height:16px; padding:0 4px; background:#d84545; color:#fff; font:700 10px 'Inter'; border-radius:9px; display:flex; align-items:center; justify-content:center; border:2px solid #fff; animation:tcPulse 1.8s ease-out infinite;">{{ unreadCount }}</span>
+      </sc-if>
+    </div>
+
+    <button onClick="{{ openNew }}" style="border:none; background:#f8991c; color:#fff; font:600 13px 'Inter'; padding:9px 16px; border-radius:9px; cursor:pointer; box-shadow:0 2px 8px rgba(248,153,28,.35); display:flex; align-items:center; gap:6px; transition:transform .12s, box-shadow .15s;" style-hover="box-shadow:0 4px 14px rgba(248,153,28,.45); transform:translateY(-1px);" style-active="transform:translateY(0);">
+      <span style="font-size:16px; line-height:0; margin-top:-1px;">+</span> Új feladat
+    </button>
+  </div>
+
+  <!-- ============ SUBHEADER ============ -->
+  <div style="flex:0 0 auto; background:#fff; border-bottom:1px solid #e3e5ea; padding:0 20px; height:48px; display:flex; align-items:center; gap:4px; z-index:20;">
+    <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="3">
+      <div data-tab="{{ tb.key }}" onClick="{{ selectTab }}" style="{{ tb.style }}">{{ tb.label }}</div>
+    </sc-for>
+    <div style="flex:1;"></div>
+
+    <!-- role chip -->
+    <div onClick="{{ goSettings }}" title="A szerepköröd — kattints a beállításokhoz" style="{{ roleChipStyle }}">
+      <span style="{{ roleDotStyle }}"></span>{{ roleLabel }}
+    </div>
+
+    <!-- view toggle -->
+    <sc-if value="{{ showViewToggle }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; background:#f0f1f4; border-radius:9px; padding:3px; gap:2px;">
+        <div data-view="board" onClick="{{ setView }}" style="{{ boardToggleStyle }}">Board</div>
+        <div data-view="map" onClick="{{ setView }}" style="{{ mapToggleStyle }}">Térkép</div>
+      </div>
+    </sc-if>
+
+    <!-- board selector -->
+    <div style="position:relative;">
+      <div onClick="{{ toggleBoardMenu }}" style="display:flex; align-items:center; gap:8px; height:34px; padding:0 12px; border:1px solid #e3e5ea; border-radius:9px; cursor:pointer; font:600 13px 'Inter'; background:#fff;" style-hover="background:#f7f8fa;">
+        <span style="{{ boardDotStyle }}"></span>{{ boardName }}
+        <span style="color:#9aa0a8; font-size:10px;">▼</span>
+      </div>
+      <sc-if value="{{ boardMenuOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute; top:40px; right:0; width:230px; background:#fff; border:1px solid #e3e5ea; border-radius:12px; box-shadow:0 12px 32px rgba(20,24,40,.16); padding:6px; z-index:50; animation:tcFadeUp .16s ease;">
+          <div style="font:600 10px 'Inter'; color:#9aa0a8; text-transform:uppercase; letter-spacing:.05em; padding:7px 10px 5px;">Boardok</div>
+          <sc-for list="{{ boards }}" as="b" hint-placeholder-count="3">
+            <div data-board="{{ b.id }}" onClick="{{ selectBoard }}" style="{{ b.rowStyle }}">
+              <span style="{{ b.dot }}"></span>
+              <span style="flex:1;">{{ b.name }}</span>
+              <span style="font:600 11px 'Inter'; color:#9aa0a8;">{{ b.count }}</span>
+            </div>
+          </sc-for>
+          <div style="height:1px; background:#eceef1; margin:6px 4px;"></div>
+          <div onClick="{{ addBoard }}" style="display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:8px; cursor:pointer; font:600 13px 'Inter'; color:#f8991c;" style-hover="background:#fff6ec;"><span style="font-size:15px;">+</span> Új board</div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- user filter chip -->
+  <sc-if value="{{ hasUserFilter }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:0 0 auto; background:#fff6ec; border-bottom:1px solid #f3e2cb; padding:8px 20px; display:flex; align-items:center; gap:10px;">
+      <span style="font:500 12px 'Inter'; color:#9a6a18;">Szűrve:</span>
+      <span style="font:600 12px 'Inter'; color:#9a6a18;">{{ userFilterName }}</span>
+      <div onClick="{{ clearUserFilter }}" style="cursor:pointer; font:600 12px 'Inter'; color:#c2750a; padding:2px 8px; border-radius:6px;" style-hover="background:#f6e4cb;">✕ törlés</div>
+    </div>
+  </sc-if>
+
+  <!-- ============ BODY ============ -->
+  <div style="flex:1 1 auto; position:relative; overflow:hidden;">
+
+    <!-- BOARD VIEW -->
+    <sc-if value="{{ isBoard }}" hint-placeholder-val="{{ true }}">
+      <div class="tc-scroll" style="position:absolute; inset:0; overflow:auto; padding:18px 20px 22px;">
+        <!-- KPI -->
+        <div style="display:flex; gap:12px; margin-bottom:18px; min-width:1000px;">
+          <div data-kpi="open" style="flex:1; background:#fff; border:1px solid #e3e5ea; border-radius:13px; padding:14px 16px; display:flex; align-items:center; gap:13px;">
+            <div style="width:38px; height:38px; border-radius:10px; background:#eaf1fe; display:flex; align-items:center; justify-content:center;"><span style="width:14px; height:14px; border:2.5px solid #3b82f6; border-radius:50%;"></span></div>
+            <div><div style="font:800 22px 'Inter'; line-height:1;">{{ kpis.open }}</div><div style="font:500 12px 'Inter'; color:#6d717a; margin-top:3px;">Nyitott</div></div>
+          </div>
+          <div data-kpi="prog" style="flex:1; background:#fff; border:1px solid #e3e5ea; border-radius:13px; padding:14px 16px; display:flex; align-items:center; gap:13px;">
+            <div style="width:38px; height:38px; border-radius:10px; background:#fef1e0; display:flex; align-items:center; justify-content:center;"><span style="width:14px; height:14px; border:2.5px solid #f8991c; border-radius:50%; border-right-color:transparent; transform:rotate(-45deg);"></span></div>
+            <div><div style="font:800 22px 'Inter'; line-height:1;">{{ kpis.prog }}</div><div style="font:500 12px 'Inter'; color:#6d717a; margin-top:3px;">Folyamatban</div></div>
+          </div>
+          <div data-kpi="crit" style="flex:1; background:#fff; border:1px solid #f3d2cb; border-radius:13px; padding:14px 16px; display:flex; align-items:center; gap:13px;">
+            <div style="width:38px; height:38px; border-radius:10px; background:#fdecec; display:flex; align-items:center; justify-content:center;"><span style="font:800 16px 'Inter'; color:#d64545;">!</span></div>
+            <div><div style="font:800 22px 'Inter'; line-height:1; color:#d64545;">{{ kpis.crit }}</div><div style="font:500 12px 'Inter'; color:#6d717a; margin-top:3px;">Kritikus</div></div>
+          </div>
+          <div data-kpi="ai" style="flex:1; background:#faf6ff; border:1px solid #e7daf7; border-radius:13px; padding:14px 16px; display:flex; align-items:center; gap:13px;">
+            <div style="width:38px; height:38px; border-radius:10px; background:#f3ecfd; display:flex; align-items:center; justify-content:center;"><span style="font:800 15px 'Inter'; color:#8757e8;">✦</span></div>
+            <div><div style="font:800 22px 'Inter'; line-height:1; color:#8757e8;">{{ kpis.ai }}</div><div style="font:500 12px 'Inter'; color:#6d717a; margin-top:3px;">AI javaslat</div></div>
+          </div>
+        </div>
+
+        <!-- COLUMNS -->
+        <div style="display:flex; gap:14px; align-items:flex-start; min-width:1000px;">
+          <sc-for list="{{ columns }}" as="col" hint-placeholder-count="5">
+            <div style="flex:1; min-width:236px; display:flex; flex-direction:column;">
+              <div style="display:flex; align-items:center; gap:8px; padding:2px 4px 11px;">
+                <span style="{{ col.dot }}"></span>
+                <span style="font:700 13px 'Inter'; color:#17181c;">{{ col.label }}</span>
+                <span style="font:600 11px 'Inter'; color:#9aa0a8; background:#eceef1; padding:1px 8px; border-radius:20px;">{{ col.count }}</span>
+                <div style="flex:1;"></div>
+                <div data-status="{{ col.key }}" onClick="{{ openNewInCol }}" style="width:24px; height:24px; border-radius:7px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#9aa0a8; font-size:16px;" style-hover="background:#eceef1; color:#17181c;">+</div>
+              </div>
+              <div data-col="{{ col.key }}" class="tc-scroll" style="{{ col.bodyStyle }}">
+                <sc-for list="{{ col.cards }}" as="card" hint-placeholder-count="2">
+                  <sc-if value="{{ card.isPlaceholder }}" hint-placeholder-val="{{ false }}">
+                    <div style="{{ card.phStyle }}"></div>
+                  </sc-if>
+                  <sc-if value="{{ card.isReal }}" hint-placeholder-val="{{ true }}">
+                    <div data-task-id="{{ card.id }}" data-status="{{ col.key }}" onPointerDown="{{ onCardDown }}" style="{{ card.style }}" style-hover="box-shadow:0 7px 18px rgba(20,24,40,.13); border-color:#d4d7dd;">
+                      <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                        <span style="{{ card.priorityStyle }}">{{ card.priorityLabel }}</span>
+                        <span style="font:600 10px 'Inter'; color:#6d717a; background:#f0f1f4; padding:3px 7px; border-radius:6px;">{{ card.moduleKey }}</span>
+                        <sc-if value="{{ card.isAi }}" hint-placeholder-val="{{ false }}">
+                          <span style="font:600 10px 'Inter'; color:#8757e8; background:#f3ecfd; padding:3px 7px; border-radius:6px; display:flex; align-items:center; gap:4px;"><span style="{{ card.aiSpinStyle }}">✦</span>{{ card.aiLabel }}</span>
+                        </sc-if>
+                        <div style="flex:1;"></div>
+                        <div data-id="{{ card.id }}" onClick="{{ onCardMenu }}" onPointerDown="{{ stopProp }}" style="width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#aab0b9;" style-hover="background:#f0f1f4; color:#17181c;">⋯</div>
+                      </div>
+                      <div style="font:600 13.5px 'Inter'; color:#17181c; line-height:1.38; margin-bottom:10px;">{{ card.title }}</div>
+                      <sc-if value="{{ card.hasProgress }}" hint-placeholder-val="{{ false }}">
+                        <div style="height:5px; background:#eceef1; border-radius:3px; overflow:hidden; margin-bottom:10px;"><div style="{{ card.progressStyle }}"></div></div>
+                      </sc-if>
+                      <sc-if value="{{ card.hasTags }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:10px;">
+                          <sc-for list="{{ card.tagsShown }}" as="tg" hint-placeholder-count="2">
+                            <span style="font:500 10px 'Inter'; color:#6d717a; background:#f5f6f8; border:1px solid #eceef1; padding:2px 7px; border-radius:5px;">#{{ tg }}</span>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <div style="display:flex; align-items:center; gap:9px;">
+                          <div style="{{ card.assigneeStyle }}">{{ card.assigneeInitials }}</div>
+                          <sc-if value="{{ card.hasChecklist }}" hint-placeholder-val="{{ false }}">
+                            <span style="display:flex; align-items:center; gap:3px; font:500 11px 'Inter'; color:#6d717a;"><span style="width:11px; height:11px; border:1.5px solid #b3b8c0; border-radius:3px; display:inline-block;"></span>{{ card.checklistText }}</span>
+                          </sc-if>
+                          <sc-if value="{{ card.hasComments }}" hint-placeholder-val="{{ false }}">
+                            <span style="display:flex; align-items:center; gap:3px; font:500 11px 'Inter'; color:#6d717a;"><span style="width:11px; height:10px; border:1.5px solid #b3b8c0; border-radius:3px; display:inline-block;"></span>{{ card.commentCount }}</span>
+                          </sc-if>
+                        </div>
+                        <span style="{{ card.dueStyle }}">{{ card.dueLabel }}</span>
+                      </div>
+                    </div>
+                  </sc-if>
+                </sc-for>
+                <sc-if value="{{ col.empty }}" hint-placeholder-val="{{ false }}">
+                  <div style="text-align:center; padding:18px 0; font:500 12px 'Inter'; color:#b3b8c0;">Nincs feladat</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- MAP VIEW -->
+    <sc-if value="{{ isMap }}" hint-placeholder-val="{{ false }}">
+      <div class="tc-scroll" style="position:absolute; inset:0; overflow:auto; background:radial-gradient(circle at 1px 1px, #dfe2e7 1px, transparent 0) 0 0/22px 22px, #eef0f3;">
+        <div style="position:absolute; top:16px; left:20px; z-index:5; display:flex; gap:10px; align-items:center;">
+          <div onClick="{{ toggleConnect }}" style="{{ connectBtnStyle }}">{{ connectLabel }}</div>
+          <div onClick="{{ addBoard }}" style="height:34px; padding:0 14px; display:flex; align-items:center; gap:6px; background:#fff; border:1px solid #e3e5ea; border-radius:9px; font:600 13px 'Inter'; cursor:pointer; box-shadow:0 1px 3px rgba(20,24,40,.06);" style-hover="background:#f7f8fa;"><span style="font-size:15px; color:#f8991c;">+</span> Új board</div>
+          <span style="font:500 12px 'Inter'; color:#8a909a;">{{ connectHint }}</span>
+        </div>
+        <div ref="{{ mapRef }}" style="position:relative; width:1100px; height:760px; margin:60px auto;">
+          <svg style="position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none;">
+            <sc-for list="{{ mapLines }}" as="ln" hint-placeholder-count="3">
+              <path d="{{ ln.d }}" fill="none" stroke="#c3c8d0" stroke-width="2" stroke-dasharray="1 0"></path>
+            </sc-for>
+          </svg>
+          <sc-for list="{{ mapNodes }}" as="node" hint-placeholder-count="4">
+            <div data-board="{{ node.id }}" onPointerDown="{{ onNodeDown }}" style="{{ node.style }}" style-hover="box-shadow:0 12px 30px rgba(20,24,40,.18); transform:translateY(-2px);">
+              <div style="display:flex; align-items:center; gap:9px; margin-bottom:9px;">
+                <span style="{{ node.dot }}"></span>
+                <span style="font:700 14px 'Inter'; color:#17181c;">{{ node.name }}</span>
+              </div>
+              <div style="display:flex; gap:14px;">
+                <div><div style="font:800 17px 'Inter';">{{ node.count }}</div><div style="font:500 10px 'Inter'; color:#9aa0a8;">feladat</div></div>
+                <div><div style="font:800 17px 'Inter'; color:#d64545;">{{ node.crit }}</div><div style="font:500 10px 'Inter'; color:#9aa0a8;">kritikus</div></div>
+              </div>
+              <div style="position:absolute; bottom:12px; right:14px; font:600 11px 'Inter'; color:#f8991c;">megnyit →</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- CALENDAR VIEW -->
+    <sc-if value="{{ isCal }}" hint-placeholder-val="{{ false }}">
+      <div class="tc-scroll" style="position:absolute; inset:0; overflow:auto; padding:18px 20px 24px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; min-width:760px;">
+          <div style="font:800 19px 'Inter'; min-width:170px;">{{ cal.monthLabel }}</div>
+          <div style="display:flex; gap:4px;">
+            <div onClick="{{ calPrev }}" style="width:32px; height:32px; border:1px solid #e3e5ea; border-radius:9px; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#6d717a; font-size:15px;" style-hover="background:#f7f8fa;">‹</div>
+            <div onClick="{{ calNext }}" style="width:32px; height:32px; border:1px solid #e3e5ea; border-radius:9px; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#6d717a; font-size:15px;" style-hover="background:#f7f8fa;">›</div>
+          </div>
+          <div onClick="{{ calToday }}" style="height:32px; padding:0 14px; border:1px solid #e3e5ea; border-radius:9px; background:#fff; display:flex; align-items:center; font:600 12px 'Inter'; cursor:pointer;" style-hover="background:#f7f8fa;">Ma</div>
+          <div style="flex:1;"></div>
+          <span style="font:500 12px 'Inter'; color:#6d717a;">{{ cal.count }} ütemezett feladat</span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-bottom:8px; min-width:760px;">
+          <sc-for list="{{ cal.weekdays }}" as="wd" hint-placeholder-count="7">
+            <div style="font:600 11px 'Inter'; color:#9aa0a8; text-transform:uppercase; letter-spacing:.04em; padding:0 4px;">{{ wd }}</div>
+          </sc-for>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; min-width:760px;">
+          <sc-for list="{{ cal.weeks }}" as="wk" hint-placeholder-count="6">
+            <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px;">
+              <sc-for list="{{ wk.days }}" as="day" hint-placeholder-count="7">
+                <div data-date="{{ day.iso }}" onClick="{{ calDayNew }}" style="{{ day.style }}" style-hover="border-color:#d4d7dd; box-shadow:0 2px 8px rgba(20,24,40,.06);">
+                  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                    <span style="{{ day.numStyle }}">{{ day.num }}</span>
+                    <sc-if value="{{ day.hasMore }}" hint-placeholder-val="{{ false }}"><span style="font:600 10px 'Inter'; color:#9aa0a8;">+{{ day.more }}</span></sc-if>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:4px;">
+                    <sc-for list="{{ day.chips }}" as="ch" hint-placeholder-count="2">
+                      <div data-task-id="{{ ch.id }}" onClick="{{ calChipClick }}" style="{{ ch.style }}"><span style="{{ ch.dot }}"></span><span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ ch.title }}</span></div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- AUTOMATIONS VIEW -->
+    <sc-if value="{{ isAuto }}" hint-placeholder-val="{{ false }}">
+      <div class="tc-scroll" style="position:absolute; inset:0; overflow:auto; padding:18px 20px 28px;">
+        <div style="max-width:940px;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+            <div style="font:800 19px 'Inter';">Automatizmusok</div>
+            <span style="font:600 11px 'Inter'; color:#6d717a; background:#eceef1; padding:2px 8px; border-radius:20px;">{{ auto.activeCount }} aktív</span>
+            <div style="flex:1;"></div>
+            <div onClick="{{ addAutomation }}" style="{{ auto.addBtnStyle }}"><span style="font-size:15px;">+</span> Új szabály</div>
+          </div>
+          <div style="font:500 13px 'Inter'; color:#6d717a; line-height:1.5; margin-bottom:18px;">Ha egy esemény bekövetkezik, automatikus művelet fut — opcionálisan AI agenttel. A szabályok a Supabase automation_rules táblába kötve. {{ auto.permNote }}</div>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <sc-for list="{{ auto.rules }}" as="r" hint-placeholder-count="4">
+              <div style="{{ r.cardStyle }}">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <div data-id="{{ r.id }}" onClick="{{ toggleAutomation }}" style="{{ r.toggleStyle }}"><span style="{{ r.knobStyle }}"></span></div>
+                  <input data-id="{{ r.id }}" defaultValue="{{ r.name }}" onBlur="{{ editAutomationName }}" style="{{ r.nameStyle }}">
+                  <div style="flex:1;"></div>
+                  <span style="font:500 11px 'Inter'; color:#aab0b9;">{{ r.runsLabel }}</span>
+                  <div data-id="{{ r.id }}" onClick="{{ runAutomation }}" style="{{ r.runBtnStyle }}" style-hover="background:#f0f1f4;">Futtatás</div>
+                  <div data-id="{{ r.id }}" onClick="{{ deleteAutomation }}" style="{{ r.delBtnStyle }}" style-hover="background:#fdecec; color:#d64545;">✕</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; margin-top:14px; flex-wrap:wrap;">
+                  <span style="font:700 10px 'Inter'; color:#9aa0a8; text-transform:uppercase; letter-spacing:.04em;">Ha</span>
+                  <select data-id="{{ r.id }}" data-field="trigger" onChange="{{ editAutomationField }}" value="{{ r.trigger }}" style="{{ r.selStyle }}">
+                    <sc-for list="{{ auto.triggers }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                  </select>
+                  <span style="color:#c4c8cf; font-size:15px;">→</span>
+                  <span style="font:700 10px 'Inter'; color:#9aa0a8; text-transform:uppercase; letter-spacing:.04em;">Akkor</span>
+                  <select data-id="{{ r.id }}" data-field="action" onChange="{{ editAutomationField }}" value="{{ r.action }}" style="{{ r.selStyle }}">
+                    <sc-for list="{{ auto.actions }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                  </select>
+                  <span style="{{ r.agentWrap }}">
+                    <span style="font:700 10px 'Inter'; color:#8757e8; text-transform:uppercase; letter-spacing:.04em;">✦ Agent</span>
+                    <select data-id="{{ r.id }}" data-field="agentId" onChange="{{ editAutomationField }}" value="{{ r.agentId }}" style="{{ r.selStyle }}">
+                      <option value="">— nincs —</option>
+                      <sc-for list="{{ auto.agentOpts }}" as="o" hint-placeholder-count="3"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                    </select>
+                  </span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- SETTINGS VIEW -->
+    <sc-if value="{{ isSet }}" hint-placeholder-val="{{ false }}">
+      <div class="tc-scroll" style="position:absolute; inset:0; overflow:auto; padding:18px 20px 28px;">
+        <div style="max-width:780px; display:flex; flex-direction:column; gap:16px;">
+          <!-- connection -->
+          <div style="{{ set.setCardStyle }}">
+            <div style="font:700 15px 'Inter'; margin-bottom:3px;">Adatforrás · Supabase</div>
+            <div style="font:500 12px 'Inter'; color:#6d717a; margin-bottom:14px;">A kapcsolatot a supabase-adapter.js fájlban állítod be (URL + anon key + board_code).</div>
+            <div style="display:flex; align-items:center; gap:11px; padding:13px 15px; border:1px solid #e3e5ea; border-radius:12px; background:#fafbfc;">
+              <span style="{{ set.connDot }}"></span>
+              <div style="flex:1;"><div style="font:600 13px 'Inter';">{{ set.connTitle }}</div><div style="font:500 11px 'Inter'; color:#9aa0a8; margin-top:2px;">{{ set.connSub }}</div></div>
+              <span style="{{ set.connBadge }}">{{ set.connMode }}</span>
+            </div>
+          </div>
+          <!-- your role -->
+          <div style="{{ set.setCardStyle }}">
+            <div style="font:700 15px 'Inter'; margin-bottom:3px;">Szerepköröd &amp; jogosultság</div>
+            <div style="font:500 12px 'Inter'; color:#6d717a; margin-bottom:14px;">Élesben a Supabase board_members jogosultsága dönt. Itt kipróbálhatod, mit lát és mit írhat egy szerepkör.</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <sc-for list="{{ set.roles }}" as="ro" hint-placeholder-count="4">
+                <div data-role="{{ ro.key }}" onClick="{{ setRole }}" style="{{ ro.style }}"><span style="{{ ro.dot }}"></span>{{ ro.label }}</div>
+              </sc-for>
+            </div>
+            <div style="margin-top:15px; display:flex; flex-direction:column; gap:8px;">
+              <sc-for list="{{ set.permList }}" as="pl" hint-placeholder-count="3">
+                <div style="display:flex; align-items:center; gap:9px; font:500 12.5px 'Inter'; color:#3a3f49;"><span style="{{ pl.icon }}">{{ pl.tick }}</span>{{ pl.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+          <!-- AI agents -->
+          <div style="{{ set.setCardStyle }}">
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:3px;"><span style="color:#8757e8; font-size:15px;">✦</span><div style="font:700 15px 'Inter';">AI Agentek</div><span style="font:700 11px 'Inter'; background:#f3ecfd; color:#8757e8; padding:2px 8px; border-radius:20px;">{{ set.agentActive }} aktív</span></div>
+            <div style="font:500 12px 'Inter'; color:#6d717a; margin-bottom:15px;">Be/kikapcsolás és írási jog agentenként. Az agentek a queue_agent_job RPC-n futnak és csak engedélyezett írási joggal módosíthatják a boardot.</div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <sc-for list="{{ set.agents }}" as="a" hint-placeholder-count="4">
+                <div style="{{ a.cardStyle }}">
+                  <div style="{{ a.iconStyle }}">{{ a.icon }}</div>
+                  <div style="flex:1; min-width:0;">
+                    <div style="display:flex; align-items:center; gap:8px;"><span style="font:600 13px 'Inter';">{{ a.name }}</span><span style="{{ a.statusBadge }}">{{ a.statusLabel }}</span></div>
+                    <div style="font:500 11px 'Inter'; color:#9aa0a8; margin-top:3px; line-height:1.45;">{{ a.desc }}</div>
+                    <div style="display:flex; gap:9px; margin-top:6px; font:500 10px 'Inter'; color:#aab0b9;"><span>{{ a.model }}</span><span>· {{ a.runsLabel }}</span><span>· {{ a.writeLabel }}</span></div>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:7px; align-items:flex-end; flex:0 0 auto;">
+                    <div data-id="{{ a.id }}" onClick="{{ toggleAgent }}" style="{{ a.toggleStyle }}"><span style="{{ a.knobStyle }}"></span></div>
+                    <div data-id="{{ a.id }}" onClick="{{ toggleAgentWrite }}" style="{{ a.writeBtnStyle }}">{{ a.writeBtnLabel }}</div>
+                    <div data-id="{{ a.id }}" onClick="{{ runAgent }}" style="{{ a.runBtnStyle }}" style-hover="background:#ebdff9;">Futtatás</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <!-- members -->
+          <div style="{{ set.setCardStyle }}">
+            <div style="font:700 15px 'Inter'; margin-bottom:3px;">Board tagok &amp; szerepkörök</div>
+            <div style="font:500 12px 'Inter'; color:#6d717a; margin-bottom:14px;">{{ set.memberNote }}</div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <sc-for list="{{ set.members }}" as="m" hint-placeholder-count="4">
+                <div style="display:flex; align-items:center; gap:11px; padding:8px 4px;">
+                  <div style="{{ m.avatarStyle }}">{{ m.initials }}</div>
+                  <div style="flex:1; min-width:0;"><div style="font:600 13px 'Inter';">{{ m.name }}</div><div style="font:500 11px 'Inter'; color:#9aa0a8;">{{ m.online }}</div></div>
+                  <select data-id="{{ m.id }}" onChange="{{ setMemberRole }}" value="{{ m.role }}" style="{{ m.selStyle }}">
+                    <sc-for list="{{ set.roleOpts }}" as="o" hint-placeholder-count="4"><option value="{{ o.v }}">{{ o.l }}</option></sc-for>
+                  </select>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <!-- toast -->
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ toastStyle }}"><span style="{{ toastIcon }}">{{ toastSign }}</span>{{ toastMsg }}</div>
+  </sc-if>
+
+  <!-- bulk bar -->
+  <sc-if value="{{ hasBulk }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:#17181c; color:#fff; border-radius:13px; box-shadow:0 14px 40px rgba(20,24,40,.32); padding:10px 12px 10px 18px; display:flex; align-items:center; gap:14px; z-index:60; animation:tcFadeUp .2s ease;">
+      <span style="font:600 13px 'Inter';">{{ bulkCount }} kijelölve</span>
+      <div style="width:1px; height:20px; background:#3a3c44;"></div>
+      <sc-for list="{{ bulkButtons }}" as="bb" hint-placeholder-count="3">
+        <div data-status="{{ bb.key }}" onClick="{{ bulkMove }}" style="font:600 12px 'Inter'; color:#e7e8eb; padding:6px 10px; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px;" style-hover="background:#2a2c33;"><span style="{{ bb.dot }}"></span>{{ bb.label }}</div>
+      </sc-for>
+      <div onClick="{{ bulkDelete }}" style="font:600 12px 'Inter'; color:#ff8a8a; padding:6px 10px; border-radius:8px; cursor:pointer;" style-hover="background:#2a2c33;">Törlés</div>
+      <div onClick="{{ clearBulk }}" style="width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#9a9ea7;" style-hover="background:#2a2c33; color:#fff;">✕</div>
+    </div>
+  </sc-if>
+
+  <!-- card context menu -->
+  <sc-if value="{{ cardMenuOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeCardMenu }}" style="position:fixed; inset:0; z-index:70;">
+      <div onClick="{{ stopProp }}" style="{{ cardMenuStyle }}">
+        <div data-act="open" onClick="{{ cardMenuAct }}" style="display:flex; align-items:center; gap:9px; padding:9px 11px; border-radius:8px; cursor:pointer; font:500 13px 'Inter';" style-hover="background:#f5f6f8;">Megnyitás</div>
+        <div data-act="dup" onClick="{{ cardMenuAct }}" style="display:flex; align-items:center; gap:9px; padding:9px 11px; border-radius:8px; cursor:pointer; font:500 13px 'Inter';" style-hover="background:#f5f6f8;">Duplikálás</div>
+        <div data-act="select" onClick="{{ cardMenuAct }}" style="display:flex; align-items:center; gap:9px; padding:9px 11px; border-radius:8px; cursor:pointer; font:500 13px 'Inter';" style-hover="background:#f5f6f8;">Kijelölés (bulk)</div>
+        <div style="height:1px; background:#eceef1; margin:5px 4px;"></div>
+        <div data-act="del" onClick="{{ cardMenuAct }}" style="display:flex; align-items:center; gap:9px; padding:9px 11px; border-radius:8px; cursor:pointer; font:500 13px 'Inter'; color:#d64545;" style-hover="background:#fdecec;">Törlés</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ NOTIFICATIONS DRAWER ============ -->
+  <div onClick="{{ closeNotif }}" style="{{ notifBackdropStyle }}"></div>
+  <div class="tc-scroll" style="{{ notifStyle }}">
+    <div style="padding:18px 20px; border-bottom:1px solid #e3e5ea; display:flex; align-items:center; gap:10px;">
+      <span style="font:700 15px 'Inter';">Értesítések</span>
+      <sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ false }}">
+        <span style="font:700 11px 'Inter'; color:#fff; background:#d84545; padding:2px 8px; border-radius:20px;">{{ unreadCount }} új</span>
+      </sc-if>
+      <div style="flex:1;"></div>
+      <div onClick="{{ markAllRead }}" style="font:600 12px 'Inter'; color:#f8991c; cursor:pointer; padding:4px 8px; border-radius:7px;" style-hover="background:#fff6ec;">Mind olvasott</div>
+      <div onClick="{{ closeNotif }}" style="width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#9aa0a8;" style-hover="background:#f0f1f4; color:#17181c;">✕</div>
+    </div>
+    <div style="padding:10px;">
+      <sc-for list="{{ notifications }}" as="n" hint-placeholder-count="3">
+        <div data-id="{{ n.id }}" onClick="{{ clickNotif }}" style="{{ n.style }}" style-hover="background:#f7f8fa; border-color:#d8dce2;">
+          <div style="{{ n.iconStyle }}">{{ n.icon }}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:7px;">
+              <span style="font:600 13px 'Inter'; color:#17181c;">{{ n.title }}</span>
+              <sc-if value="{{ n.unread }}" hint-placeholder-val="{{ false }}"><span style="width:7px; height:7px; border-radius:50%; background:#d84545; flex:0 0 auto;"></span></sc-if>
+            </div>
+            <div style="font:500 12px 'Inter'; color:#6d717a; margin-top:3px; line-height:1.4;">{{ n.sub }}</div>
+            <div style="font:500 11px 'Inter'; color:#aab0b9; margin-top:5px;">{{ n.at }}</div>
+          </div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ notifEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center; padding:40px 20px; color:#b3b8c0; font:500 13px 'Inter';">Nincs értesítés</div>
+      </sc-if>
+    </div>
+    <div style="position:sticky; bottom:0; background:#fff; border-top:1px solid #e3e5ea; padding:12px 16px;">
+      <div onClick="{{ simulateNotif }}" style="text-align:center; font:600 12px 'Inter'; color:#6d717a; cursor:pointer; padding:9px; border:1px dashed #cdd2da; border-radius:9px;" style-hover="border-color:#f8b65a; color:#c2750a; background:#fffaf2;">⟳ Bejövő szimulálása (Retool / Supabase)</div>
+    </div>
+  </div>
+
+  <!-- ============ MEMBERS DRAWER ============ -->
+  <div onClick="{{ closeMembers }}" style="{{ membersBackdropStyle }}"></div>
+  <div class="tc-scroll" style="{{ membersStyle }}">
+    <div style="padding:18px 20px; border-bottom:1px solid #e3e5ea; display:flex; align-items:center;">
+      <span style="font:700 15px 'Inter';">Board tagok</span>
+      <span style="font:600 11px 'Inter'; color:#9aa0a8; background:#eceef1; padding:2px 8px; border-radius:20px; margin-left:9px;">{{ memberCount }}</span>
+      <div style="flex:1;"></div>
+      <div onClick="{{ closeMembers }}" style="width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#9aa0a8;" style-hover="background:#f0f1f4; color:#17181c;">✕</div>
+    </div>
+    <div style="padding:10px;">
+      <sc-for list="{{ allMembers }}" as="m" hint-placeholder-count="4">
+        <div style="display:flex; align-items:center; gap:12px; padding:10px 11px; border-radius:10px;" style-hover="background:#f7f8fa;">
+          <div style="{{ m.avatarStyle }}">{{ m.initials }}<span style="{{ m.dot }}"></span></div>
+          <div style="flex:1; min-width:0;">
+            <div style="font:600 13px 'Inter'; color:#17181c;">{{ m.name }}</div>
+            <div style="font:500 11px 'Inter'; color:#9aa0a8;">{{ m.role }} · {{ m.statusLabel }}</div>
+          </div>
+          <div data-user="{{ m.id }}" onClick="{{ filterUser }}" style="font:600 11px 'Inter'; color:#f8991c; cursor:pointer; padding:5px 10px; border:1px solid #f3e2cb; border-radius:8px;" style-hover="background:#fff6ec;">Szűr</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ============ NEW TASK MODAL ============ -->
+  <sc-if value="{{ newOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeNew }}" style="position:fixed; inset:0; background:rgba(20,24,40,.42); backdrop-filter:blur(2px); z-index:90; display:flex; align-items:flex-start; justify-content:center; padding-top:7vh;">
+      <div onClick="{{ stopProp }}" style="width:560px; max-width:94vw; background:#fff; border-radius:16px; box-shadow:0 24px 70px rgba(20,24,40,.32); overflow:hidden; animation:tcFadeUp .22s cubic-bezier(.22,.9,.27,1);">
+        <div style="padding:18px 22px; border-bottom:1px solid #eceef1; display:flex; align-items:center;">
+          <span style="font:700 16px 'Inter';">Új feladat</span>
+          <div style="flex:1;"></div>
+          <div onClick="{{ closeNew }}" style="width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#9aa0a8;" style-hover="background:#f0f1f4; color:#17181c;">✕</div>
+        </div>
+        <div style="padding:20px 22px; display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <div style="font:600 11px 'Inter'; color:#6d717a; margin-bottom:6px;">CÍM</div>
+            <input id="nt-title" placeholder="Mi a feladat?" style="width:100%; height:40px; border:1px solid #e3e5ea; border-radius:9px; padding:0 12px; font:500 14px 'Inter'; outline:none;" style-focus="border-color:#f8b65a; box-shadow:0 0 0 3px rgba(248,153,28,.12);">
+          </div>
+          <div>
+            <div style="font:600 11px 'Inter'; color:#6d717a; margin-bottom:6px;">LEÍRÁS</div>
+            <textarea id="nt-desc" placeholder="Részletek…" style="width:100%; height:74px; border:1px solid #e3e5ea; border-radius:9px; padding:10px 12px; font:500 13px 'Inter'; outline:none; resize:vertical;" style-focus="border-color:#f8b65a; box-shadow:0 0 0 3px rgba(248,153,28,.12);"></textarea>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <div style="flex:1;">
+              <div style="font:600 11px 'Inter'; color:#6d717a; margin-bottom:6px;">OSZLOP</div>
+              <select id="nt-status" style="width:100%; height:38px; border:1px solid #e3e5ea; border-radius:9px; padding:0 10px; font:500 13px 'Inter'; outline:none; background:#fff;">
+                <option value="new">Új</option><option value="in_progress">Folyamatban</option><option value="waiting">Jóváhagyásra vár</option><option value="ai_preparing">AI előkészítés</option><option value="done">Kész</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <div style="font:600 11px 'Inter'; color:#6d717a; margin-bottom:6px;">PRIORITÁS</div>
+              <select id="nt-priority" style="width:100%; height:38px; border:1px solid #e3e5ea; border-radius:9px; padding:0 10px; font:500 13px 'Inter'; outline:none; background:#fff;">
+                <option value="critical">Kritikus</option><option value="high">Magas</option><option value="normal" selected>Normál</option><option value="low">Alacsony</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <div style="flex:1;">
+              <div style="font:600 11px 'Inter'; color:#6d717a; margin-bottom:6px;">MODUL</div>
+              <select id="nt-module" style="width:100%; height:38px; border:1px solid #e3e5ea; border-radius:9px; padding:0 10px; font:500 13px 'Inter'; outline:none; background:#fff;">
+                <option value="general">Általános</option><option value="case">Ügy</option><option value="document">Dokumentum</option><option value="partner">Partner</option><option value="finance">Pénzügy</option><option value="operation">Operáció</option><option value="ai">AI</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <div style="font:600 11px 'Inter'; color:#6d717a; margin-bottom:6px;">FELELŐS</div>
+              <select id="nt-assignee" style="width:100%; height:38px; border:1px solid #e3e5ea; border-radius:9px; padding:0 10px; font:500 13px 'Inter'; outline:none; background:#fff;">
+                <sc-for list="{{ allMembers }}" as="m" hint-placeholder-count="3"><option value="{{ m.id }}">{{ m.name }}</option></sc-for>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <div style="font:600 11px 'Inter'; color:#6d717a; margin-bottom:6px;">HATÁRIDŐ</div>
+              <input id="nt-due" placeholder="pl. Ma 16:00" style="width:100%; height:38px; border:1px solid #e3e5ea; border-radius:9px; padding:0 10px; font:500 13px 'Inter'; outline:none;" style-focus="border-color:#f8b65a; box-shadow:0 0 0 3px rgba(248,153,28,.12);">
+            </div>
+          </div>
+        </div>
+        <div style="padding:14px 22px; border-top:1px solid #eceef1; display:flex; justify-content:flex-end; gap:10px;">
+          <div onClick="{{ closeNew }}" style="font:600 13px 'Inter'; color:#6d717a; padding:9px 16px; border-radius:9px; cursor:pointer;" style-hover="background:#f0f1f4;">Mégse</div>
+          <div onClick="{{ submitNew }}" style="font:600 13px 'Inter'; color:#fff; background:#f8991c; padding:9px 18px; border-radius:9px; cursor:pointer; box-shadow:0 2px 8px rgba(248,153,28,.35);" style-hover="box-shadow:0 4px 14px rgba(248,153,28,.45);">Létrehozás</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ CARD DETAIL MODAL (zoom) ============ -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; padding:4vh 20px;">
+      <div onClick="{{ closeModal }}" style="{{ modalBackdropStyle }}"></div>
+      <div class="tc-modal-card tc-scroll" style="position:relative; width:880px; max-width:96vw; max-height:90vh; overflow:auto; background:#fff; border-radius:18px; box-shadow:0 30px 90px rgba(20,24,40,.4); will-change:transform;">
+        <!-- modal top accent -->
+        <div style="{{ sel.accentStyle }}"></div>
+        <div style="display:flex; gap:0; min-height:420px;">
+          <!-- LEFT -->
+          <div style="flex:1.55; padding:22px 24px; border-right:1px solid #eceef1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+              <span style="{{ sel.priorityStyle }}">{{ sel.priorityLabel }}</span>
+              <span style="font:600 10px 'Inter'; color:#6d717a; background:#f0f1f4; padding:4px 9px; border-radius:6px;">{{ sel.moduleKey }}</span>
+              <span style="{{ sel.statusPillStyle }}">{{ sel.statusLabel }}</span>
+            </div>
+            <input defaultValue="{{ sel.title }}" data-field="title" onBlur="{{ modalEditField }}" style="width:100%; border:none; outline:none; font:800 23px 'Inter'; color:#17181c; line-height:1.25; margin-bottom:16px; padding:2px 4px; border-radius:7px; background:transparent;" style-focus="background:#f5f6f8;">
+            <div style="font:600 11px 'Inter'; color:#9aa0a8; text-transform:uppercase; letter-spacing:.05em; margin-bottom:7px;">Leírás</div>
+            <textarea data-field="description" defaultValue="{{ sel.description }}" onBlur="{{ modalEditField }}" placeholder="Adj hozzá leírást…" style="width:100%; min-height:70px; border:1px solid #eceef1; border-radius:10px; padding:11px 13px; font:500 13.5px 'Inter'; color:#3a3f49; line-height:1.55; outline:none; resize:vertical; margin-bottom:22px;" style-focus="border-color:#f8b65a; box-shadow:0 0 0 3px rgba(248,153,28,.1);"></textarea>
+
+            <!-- checklist -->
+            <div style="display:flex; align-items:center; gap:9px; margin-bottom:11px;">
+              <span style="font:600 11px 'Inter'; color:#9aa0a8; text-transform:uppercase; letter-spacing:.05em;">Checklist</span>
+              <span style="font:600 11px 'Inter'; color:#6d717a;">{{ sel.checklistText }}</span>
+              <div style="flex:1; height:6px; background:#eceef1; border-radius:4px; overflow:hidden;"><div style="{{ sel.checklistBarStyle }}"></div></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:10px;">
+              <sc-for list="{{ sel.checklist }}" as="ci" hint-placeholder-count="2">
+                <div style="display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:8px;" style-hover="background:#f7f8fa;">
+                  <div data-idx="{{ ci.idx }}" onClick="{{ modalToggleCheck }}" style="{{ ci.boxStyle }}">{{ ci.tick }}</div>
+                  <span style="{{ ci.textStyle }}">{{ ci.text }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input id="md-check" placeholder="Új checklist elem…" onKeyDown="{{ modalCheckKey }}" style="flex:1; height:36px; border:1px solid #e3e5ea; border-radius:8px; padding:0 11px; font:500 13px 'Inter'; outline:none;" style-focus="border-color:#f8b65a;">
+              <div onClick="{{ modalAddCheck }}" style="height:36px; padding:0 14px; display:flex; align-items:center; font:600 12px 'Inter'; color:#6d717a; background:#f0f1f4; border-radius:8px; cursor:pointer;" style-hover="background:#e6e8ec;">Hozzáad</div>
+            </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div style="flex:1; padding:22px 22px; background:#fafbfc; min-width:0; display:flex; flex-direction:column; gap:18px;">
+            <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px;">
+              <div data-id="{{ sel.id }}" onClick="{{ onCardMenuFromModal }}" style="width:32px; height:32px; border-radius:9px; background:#fff; border:1px solid #e3e5ea; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#6d717a;" style-hover="background:#f0f1f4;">⋯</div>
+              <div onClick="{{ closeModal }}" style="width:32px; height:32px; border-radius:9px; background:#fff; border:1px solid #e3e5ea; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#6d717a;" style-hover="background:#f0f1f4;">✕</div>
+            </div>
+
+            <!-- status mover -->
+            <div>
+              <div style="font:600 11px 'Inter'; color:#9aa0a8; text-transform:uppercase; letter-spacing:.05em; margin-bottom:9px;">Státusz</div>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <sc-for list="{{ sel.statusButtons }}" as="sb" hint-placeholder-count="3">
+                  <div data-status="{{ sb.key }}" onClick="{{ modalMove }}" style="{{ sb.style }}"><span style="{{ sb.dot }}"></span>{{ sb.label }}<span style="flex:1;"></span><span style="{{ sb.checkStyle }}">✓</span></div>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- meta -->
+            <div style="display:flex; flex-direction:column; gap:11px;">
+              <div style="display:flex; align-items:center; gap:11px;">
+                <span style="font:500 12px 'Inter'; color:#9aa0a8; width:64px;">Felelős</span>
+                <div style="{{ sel.assigneeStyle }}">{{ sel.assigneeInitials }}</div>
+                <span style="font:600 12px 'Inter'; color:#17181c;">{{ sel.assigneeName }}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:11px;">
+                <span style="font:500 12px 'Inter'; color:#9aa0a8; width:64px;">Határidő</span>
+                <span style="{{ sel.dueStyle }}">{{ sel.dueLabel }}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:11px;">
+                <span style="font:500 12px 'Inter'; color:#9aa0a8; width:64px;">Forrás</span>
+                <div data-id="{{ sel.id }}" onClick="{{ modalOpenSource }}" style="font:600 12px 'Inter'; color:#3b82f6; cursor:pointer; display:flex; align-items:center; gap:5px;" style-hover="text-decoration:underline;">{{ sel.sourceLabel }} ↗</div>
+              </div>
+            </div>
+
+            <!-- AI -->
+            <div style="background:linear-gradient(135deg,#faf6ff,#fff); border:1px solid #ebdff9; border-radius:12px; padding:13px 14px;">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><span style="{{ sel.aiSpinStyle }}; color:#8757e8; font-size:14px;">✦</span><span style="font:700 12px 'Inter'; color:#8757e8;">AI Agent</span><span style="flex:1;"></span><span style="font:600 11px 'Inter'; color:#8757e8;">{{ sel.aiStateLabel }}</span></div>
+              <div style="font:500 12px 'Inter'; color:#6d717a; line-height:1.5; margin-bottom:11px;">Auditálható agent művelet — a queue_agent_job RPC-be kötve.</div>
+              <div data-id="{{ sel.id }}" onClick="{{ modalQueueAgent }}" style="width:100%; text-align:center; font:600 12px 'Inter'; color:#fff; background:#8757e8; padding:9px; border-radius:9px; cursor:pointer;" style-hover="background:#7a48e0;">{{ sel.aiBtnLabel }}</div>
+            </div>
+
+            <!-- comments -->
+            <div>
+              <div style="font:600 11px 'Inter'; color:#9aa0a8; text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px;">Hozzászólások &amp; activity</div>
+              <div style="display:flex; flex-direction:column; gap:11px; margin-bottom:12px; max-height:200px; overflow:auto;" class="tc-scroll">
+                <sc-for list="{{ sel.feed }}" as="fi" hint-placeholder-count="2">
+                  <div style="display:flex; gap:9px;">
+                    <div style="{{ fi.avatarStyle }}">{{ fi.initials }}</div>
+                    <div style="flex:1; min-width:0;">
+                      <div style="font:500 12.5px 'Inter'; color:#3a3f49; line-height:1.45;"><b style="color:#17181c;">{{ fi.author }}</b> {{ fi.text }}</div>
+                      <div style="font:500 10px 'Inter'; color:#aab0b9; margin-top:3px;">{{ fi.at }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <input id="md-comment" placeholder="Írj megjegyzést…" onKeyDown="{{ modalCommentKey }}" style="flex:1; height:38px; border:1px solid #e3e5ea; border-radius:9px; padding:0 12px; font:500 13px 'Inter'; outline:none;" style-focus="border-color:#f8b65a; box-shadow:0 0 0 3px rgba(248,153,28,.1);">
+                <div onClick="{{ modalAddComment }}" style="height:38px; padding:0 15px; display:flex; align-items:center; font:600 12px 'Inter'; color:#fff; background:#f8991c; border-radius:9px; cursor:pointer;" style-hover="background:#e88a12;">Küld</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:840},&quot;defaultRole&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;admin&quot;,&quot;options&quot;:[&quot;viewer&quot;,&quot;member&quot;,&quot;approver&quot;,&quot;admin&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Jogosultság&quot;,&quot;label&quot;:&quot;Alap szerepkör (demó)&quot;},&quot;liveDemo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Viselkedés&quot;,&quot;label&quot;:&quot;Élő demó (auto bejövő értesítések)&quot;},&quot;compact&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Megjelenés&quot;,&quot;label&quot;:&quot;Kompakt kártyák&quot;}}">
+class Component extends DCLogic {
+  // ---------- constants ----------
+  COLS = [
+    { key: 'new',          label: 'Új',                color: '#3b82f6' },
+    { key: 'in_progress',  label: 'Folyamatban',       color: '#f8991c' },
+    { key: 'waiting',      label: 'Jóváhagyásra vár',  color: '#eab308' },
+    { key: 'ai_preparing', label: 'AI előkészítés',    color: '#8757e8' },
+    { key: 'done',         label: 'Kész',              color: '#22a565' }
+  ];
+  PRIO = {
+    critical: { label: 'KRITIKUS', color: '#d64545', bg: '#fdecec' },
+    high:     { label: 'MAGAS',    color: '#c2750a', bg: '#fdf2e2' },
+    normal:   { label: 'NORMÁL',   color: '#2d9861', bg: '#e8f6ee' },
+    low:      { label: 'ALACSONY', color: '#6d717a', bg: '#f0f1f4' }
+  };
+  AI_LABEL = { running: 'fut…', queued: 'sorban', done: 'kész', error: 'hiba', suggested: 'javasolt', none: '' };
+  STORE_KEY = 'hd_taskcenter_v3';
+
+  // ----- jogosultsági rendszer -----
+  PERM = { viewer: 1, member: 2, approver: 3, admin: 4 };
+  PERM_NEED = { create: 2, edit: 2, move: 2, comment: 2, queue_agent: 2, dup: 2, approve: 3, delete: 4, manage_members: 4, manage_automations: 4, manage_agents: 4 };
+  ROLE_LABEL = { viewer: 'Megfigyelő', member: 'Tag', approver: 'Jóváhagyó', admin: 'Admin' };
+  ROLE_DOT = { viewer: '#9aa0a8', member: '#3b82f6', approver: '#c2750a', admin: '#22a565' };
+  PERM_DESC = {
+    viewer:   ['Feladatok és naptár megtekintése'],
+    member:   ['Feladatok megtekintése', 'Létrehozás, szerkesztés, áthelyezés', 'Hozzászólás, AI agent indítása'],
+    approver: ['Minden, amit a Tag', 'Jóváhagyás — „Kész" oszlopba mozgatás'],
+    admin:    ['Minden, amit a Jóváhagyó', 'Törlés, tagok és jogosultságok', 'Automatizmusok és AI agentek kezelése']
+  };
+  TRIGGERS = [['email_received','Új email érkezik'],['task_created','Feladat létrejön'],['task_critical','Feladat kritikussá válik'],['status_changed','Státusz változik'],['ai_done','AI agent végzett'],['doc_missing','Dokumentum hiányzik'],['sla_breach','SLA közeli lejárat']];
+  ACTIONS = [['create_task','Feladat létrehozása (Új)'],['move_status','Áthelyezés másik oszlopba'],['notify','Értesítés küldése'],['queue_agent','AI agent futtatása'],['set_priority','Prioritás állítása'],['assign','Felelős hozzárendelése']];
+
+  state = {
+    ready: false, boards: [], members: [], tasks: [], notifications: [],
+    agents: [], automations: [], currentRole: 'admin',
+    currentBoardId: 'main', view: 'board', tab: 'all', search: '',
+    userFilter: null, boardMenuOpen: false, calOffset: 0, toast: null,
+    dragId: null, dragH: 90, dragOverCol: null, dragOverIndex: 0,
+    selectedId: null, modalOpen: false, modalClosing: false,
+    newOpen: false, newStatus: 'new', newDue: '', notifOpen: false, membersOpen: false,
+    bulk: [], cardMenuOpen: false, cardMenuId: null, cardMenuX: 0, cardMenuY: 0,
+    connectMode: false, connectFrom: null
+  };
+
+  // ----- permission helpers -----
+  can(action) { return (this.PERM[this.state.currentRole] || 1) >= (this.PERM_NEED[action] || 1); }
+  require(action, msg) { if (this.can(action)) return true; this.toast(msg || 'Nincs jogosultságod ehhez a művelethez.', 'deny'); return false; }
+  toast(msg, kind) { const id = Date.now() + Math.random(); this.setState({ toast: { msg, kind: kind || 'info', id } }); clearTimeout(this._tt); this._tt = setTimeout(() => { if (this.state.toast && this.state.toast.id === id) this.setState({ toast: null }); }, 2600); }
+
+  // ================= lifecycle =================
+  componentDidMount() {
+    this.load();
+    this.backend = window.TaskCenterBackend || null;
+    window.addEventListener('tc-backend-ready', () => { this.backend = window.TaskCenterBackend || null; this.syncBackend(); });
+    window.addEventListener('message', this.onBridge);
+    this.syncBackend();
+    this.applyLiveDemo();
+    try { window.parent && window.parent.postMessage({ type: 'task_center_ready' }, '*'); } catch (e) {}
+  }
+  componentWillUnmount() { clearInterval(this._live); if (this._unsub) this._unsub(); }
+  applyLiveDemo() { clearInterval(this._live); if (this.props.liveDemo) this._live = setInterval(() => this.simulateNotif(), 12000); }
+  componentDidUpdate(prevProps, prev) {
+    if (prevProps && prevProps.liveDemo !== this.props.liveDemo) this.applyLiveDemo();
+    if (prev && this.state.ready) {
+      const k = this.kpis(); const pk = this._prevKpi || {};
+      ['open','prog','crit','ai'].forEach(key => { if (pk[key] !== undefined && pk[key] !== k[key]) this.popKpi(key); });
+      this._prevKpi = k;
+    }
+  }
+  popKpi(key) {
+    if (!this.root) return;
+    const el = this.root.querySelector(`[data-kpi="${key}"]`);
+    if (el) el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.05)' }, { transform: 'scale(1)' }], { duration: 320, easing: 'cubic-bezier(.22,.9,.27,1)' });
+  }
+
+  // ================= persistence =================
+  seed() {
+    const boards = [
+      { id: 'main', code: 'main_user_dashboard', name: 'Feladatközpont', color: '#f8991c', x: 120, y: 150, links: ['fin','hr','doc'] },
+      { id: 'fin',  code: 'finance',  name: 'Pénzügy',        color: '#2d9861', x: 560, y: 70,  links: [] },
+      { id: 'hr',   code: 'hr',       name: 'HR / Állomány',  color: '#5868c9', x: 600, y: 330, links: ['doc'] },
+      { id: 'doc',  code: 'documents',name: 'Dokumentumok',   color: '#8757e8', x: 180, y: 470, links: [] }
+    ];
+    const members = [
+      { id: 'me', name: 'Én', initials: 'ÉN', color: '#193b69', role: 'Saját user', perm: 'admin', online: true },
+      { id: 'gb', name: 'Gál Balázs', initials: 'GB', color: '#193b69', role: 'Board member', perm: 'member', online: true },
+      { id: 'km', name: 'Kovács Míra', initials: 'KM', color: '#d85c38', role: 'Board member', perm: 'member', online: true },
+      { id: 'an', name: 'Admin Nóra', initials: 'AN', color: '#5868c9', role: 'Jóváhagyó', perm: 'approver', online: false },
+      { id: 'cs', name: 'Csapat', initials: 'CS', color: '#2d9861', role: 'Csoport', perm: 'member', online: true },
+      { id: 'mk', name: 'Minta Kitti', initials: 'MK', color: '#8757e8', role: 'Megfigyelő', perm: 'viewer', online: false }
+    ];
+    const agents = [
+      { id: 'ag_intake', name: 'Email-feldolgozó', type: 'email_intake', icon: '✉', desc: 'Bejövő emailekből feladatot készít, kinyeri a határidőt és a felelőst.', status: 'active', canWrite: true, model: 'claude-sonnet', runs: 128, lastRun: 'ma 08:12', scopes: ['create_task', 'set_due'] },
+      { id: 'ag_assist', name: 'Ügy-asszisztens', type: 'task_assistant', icon: '✦', desc: 'Feladatokhoz checklistet és következő lépést javasol.', status: 'active', canWrite: true, model: 'claude-sonnet', runs: 342, lastRun: 'ma 09:40', scopes: ['add_checklist', 'comment'] },
+      { id: 'ag_doc', name: 'Dokumentum-ellenőr', type: 'doc_check', icon: '▤', desc: 'Hiányzó dokumentumokat ismer fel és jelez a kártyán.', status: 'paused', canWrite: false, model: 'claude-haiku', runs: 57, lastRun: 'tegnap', scopes: [] },
+      { id: 'ag_sla', name: 'SLA-figyelő', type: 'sla_watch', icon: '⏱', desc: 'Lejáró határidőket figyel és eszkalál a jóváhagyónak.', status: 'active', canWrite: true, model: 'claude-haiku', runs: 980, lastRun: 'most', scopes: ['set_priority', 'notify'] }
+    ];
+    const automations = [
+      { id: 'au1', name: 'Új email → feladat', enabled: true, trigger: 'email_received', action: 'create_task', agentId: 'ag_intake', runs: 128, lastRun: 'ma 08:12' },
+      { id: 'au2', name: 'Kritikus → jóváhagyó értesítése', enabled: true, trigger: 'task_critical', action: 'notify', agentId: '', runs: 23, lastRun: 'tegnap' },
+      { id: 'au3', name: 'AI javaslat kész → Folyamatban', enabled: false, trigger: 'ai_done', action: 'move_status', agentId: 'ag_assist', runs: 64, lastRun: 'ma 09:40' },
+      { id: 'au4', name: 'Dok. hiány → ellenőr indítása', enabled: true, trigger: 'doc_missing', action: 'queue_agent', agentId: 'ag_doc', runs: 57, lastRun: 'tegnap' }
+    ];
+    const now = Date.now();
+    const T = (o) => Object.assign({
+      id: 'T' + Math.random().toString(36).slice(2, 8), boardId: 'main', description: '',
+      tags: [], progress: 0, ai_state: 'none', checklist: [], comments: [],
+      activity: [{ text: 'létrehozta a kártyát', author: 'Én', initials: 'ÉN', color: '#193b69', at: 'most' }],
+      source: { source_module: 'demo', source_type: 'demo', source_id: 'SRC' }, created_at: now
+    }, o);
+    const tasks = [
+      T({ boardId:'main', status:'new', priority:'critical', module_key:'case', assignee:'me', title:'Új ügy ellenőrzése — 2026 be/kilépők', due_label:'Ma 10:00', tags:['új','ellenőrzés'], progress:30, sort_order:100,
+          description:'Az állománylistából belépők és kilépők a 2026-os évre, náció bontásban egy kalkulációhoz. A technikai külön kell.',
+          checklist:[{text:'Állománylista letöltése', done:true},{text:'Náció bontás', done:false},{text:'Technikai külön', done:false}],
+          comments:[{author:'Mónika Gál', initials:'MG', color:'#d85c38', text:'kellene a belépők/kilépők aránya', at:'2026.06.12 16:17'}],
+          source:{ source_module:'mail', source_type:'gmail', source_id:'19ebc2dcbd7e1d34', source_url:'https://hddirekt.com' } }),
+      T({ boardId:'main', status:'new', priority:'high', module_key:'document', assignee:'km', title:'Hiányzó adat pótlása — állománylista', due_label:'Ma 14:30', tags:['adat','hiányzó'], progress:0, sort_order:200,
+          checklist:[{text:'Adózási azonosító', done:false},{text:'TAJ ellenőrzés', done:false}] }),
+      T({ boardId:'main', status:'new', priority:'normal', module_key:'partner', assignee:'gb', title:'Partner adcategyeztetés — Q3', due_label:'Holnap', tags:['partner'], sort_order:300 }),
+      T({ boardId:'main', status:'in_progress', priority:'normal', module_key:'operation', assignee:'gb', title:'Náció bontás kalkuláció előkészítése', due_label:'Ma 18:00', progress:55, sort_order:100, comments:[{author:'Gál Balázs', initials:'GB', color:'#193b69', text:'első verzió kész, nézitek?', at:'ma 11:20'}] }),
+      T({ boardId:'main', status:'in_progress', priority:'high', module_key:'finance', assignee:'an', title:'Munkaerő-kölcsönzői díjkalkuláció', due_label:'Ma 16:00', tags:['pénzügy'], progress:72, sort_order:200,
+          checklist:[{text:'Alapadatok', done:true},{text:'Margin', done:true},{text:'Jóváhagyás', done:false}] }),
+      T({ boardId:'main', status:'waiting', priority:'high', module_key:'operation', assignee:'an', title:'Jóváhagyás: rekord ellenőrzése', due_label:'Holnap', tags:['jóváhagyás'], progress:90, sort_order:100 }),
+      T({ boardId:'main', status:'waiting', priority:'normal', module_key:'partner', assignee:'cs', title:'Partner visszajelzés jóváhagyása', due_label:'2 nap', sort_order:200 }),
+      T({ boardId:'main', status:'ai_preparing', priority:'normal', module_key:'ai', assignee:'me', title:'AI: ellenőrző lista előkészítése', due_label:'Ma 17:00', tags:['AI','agent'], progress:40, ai_state:'running', sort_order:100 }),
+      T({ boardId:'main', status:'ai_preparing', priority:'normal', module_key:'ai', assignee:'gb', title:'AI: dokumentum hiány felismerés', due_label:'Ma', tags:['AI'], ai_state:'queued', sort_order:200 }),
+      T({ boardId:'main', status:'done', priority:'normal', module_key:'case', assignee:'me', title:'Lezárt ügy archiválása', due_label:'Tegnap', progress:100, sort_order:100 }),
+      T({ boardId:'main', status:'done', priority:'low', module_key:'document', assignee:'mk', title:'Technikai adatlap feltöltve', due_label:'Tegnap', progress:100, sort_order:200 }),
+      T({ boardId:'fin', status:'new', priority:'high', module_key:'finance', assignee:'an', title:'Havi zárás előkészítés', due_label:'Hét vége', sort_order:100 }),
+      T({ boardId:'fin', status:'in_progress', priority:'normal', module_key:'finance', assignee:'me', title:'Számla egyeztetés', progress:40, sort_order:100 }),
+      T({ boardId:'hr', status:'new', priority:'critical', module_key:'operation', assignee:'km', title:'Belépő dokumentumok hiánya', due_label:'Ma', sort_order:100 }),
+      T({ boardId:'hr', status:'waiting', priority:'normal', module_key:'operation', assignee:'an', title:'Munkaszerződés jóváhagyás', sort_order:100 }),
+      T({ boardId:'doc', status:'new', priority:'normal', module_key:'document', assignee:'gb', title:'Szerződés sablon frissítés', sort_order:100 })
+    ];
+    const notifications = [
+      { id: 'n1', kind: 'mail', title: 'Új email érkezett', sub: 'Mónika Gál — 2026 be/kilépők aránya', taskId: tasks[0].id, at: '2026.06.12 16:17', read: true },
+      { id: 'n2', kind: 'approval', title: 'Jóváhagyásra vár', sub: 'Rekord ellenőrzése — Admin Nóra', taskId: tasks[5].id, at: 'ma 09:40', read: true },
+      { id: 'n3', kind: 'ai', title: 'AI javaslat kész', sub: 'Ellenőrző lista előkészítése', taskId: tasks[7].id, at: 'ma 08:15', read: true }
+    ];
+    // due_label → valós dátum (naptárhoz)
+    const t0 = new Date(); t0.setHours(0, 0, 0, 0); const DAY = 86400000;
+    const parseDue = (lbl, i) => {
+      if (!lbl) return null;
+      const l = lbl.toLowerCase(); let d;
+      if (l.includes('tegnap')) d = new Date(t0.getTime() - DAY);
+      else if (l.includes('holnap')) d = new Date(t0.getTime() + DAY);
+      else if (l.includes('hét vége')) d = new Date(t0.getTime() + ((6 - t0.getDay() + 7) % 7 || 5) * DAY);
+      else if (l.includes('2 nap')) d = new Date(t0.getTime() + 2 * DAY);
+      else if (l.includes('ma')) d = new Date(t0);
+      else d = new Date(t0.getTime() + ((i % 9) - 1) * DAY);
+      const tm = lbl.match(/(\d{1,2}):(\d{2})/); if (tm) d.setHours(+tm[1], +tm[2]);
+      return d.toISOString();
+    };
+    tasks.forEach((t, i) => { if (!t.due_at) t.due_at = parseDue(t.due_label, i); });
+    return { boards, members, tasks, notifications, agents, automations, currentRole: this.props.defaultRole || 'admin', currentBoardId: 'main' };
+  }
+  load() {
+    let data;
+    try { const raw = localStorage.getItem(this.STORE_KEY); if (raw) data = JSON.parse(raw); } catch (e) {}
+    if (!data || !data.tasks) data = this.seed();
+    this._prevKpi = null;
+    this.setState({ ready: true, boards: data.boards, members: data.members, tasks: data.tasks, notifications: data.notifications, agents: data.agents || [], automations: data.automations || [], currentRole: data.currentRole || this.props.defaultRole || 'admin', currentBoardId: data.currentBoardId || 'main' });
+  }
+  save() {
+    const s = this.state;
+    try { localStorage.setItem(this.STORE_KEY, JSON.stringify({ boards: s.boards, members: s.members, tasks: s.tasks, notifications: s.notifications, agents: s.agents, automations: s.automations, currentRole: s.currentRole, currentBoardId: s.currentBoardId })); } catch (e) {}
+  }
+  emit(type, payload) { try { window.parent && window.parent.postMessage(Object.assign({ type }, payload), '*'); } catch (e) {} }
+
+  // ================= backend / bridge =================
+  async syncBackend() {
+    if (!this.backend) return;
+    try {
+      const calls = [this.backend.listCards(), this.backend.listMembers()];
+      if (this.backend.listAgents) calls.push(this.backend.listAgents());
+      if (this.backend.listAutomations) calls.push(this.backend.listAutomations());
+      const [cards, members, agents, automations] = await Promise.all(calls);
+      const patch = {};
+      if (cards && cards.length) patch.tasks = cards.map(c => Object.assign({ boardId: this.state.currentBoardId, checklist: [], comments: [], activity: [], tags: c.tags || [] }, c));
+      if (members && members.length) patch.members = members;
+      if (agents && agents.length) patch.agents = agents;
+      if (automations && automations.length) patch.automations = automations;
+      if (Object.keys(patch).length) this.setState(patch, () => this.save());
+      this._unsub = this.backend.subscribe((p) => this.onRealtime(p));
+    } catch (e) { console.warn('Supabase sync skipped:', e.message); }
+  }
+  onRealtime(p) {
+    // élő frissítés → új értesítés jelzés
+    const title = p._notification ? 'Új értesítés' : 'Frissítés a boardon';
+    this.pushNotif({ kind: 'ai', title, sub: (p.new && p.new.title) || 'Supabase realtime esemény', taskId: null });
+    this.syncBackend();
+  }
+  onBridge = (ev) => {
+    const d = ev.data || {}; if (!d.type) return;
+    if (d.type === 'task_center_set_tasks' && Array.isArray(d.tasks)) {
+      const tasks = d.tasks.map(c => Object.assign({ boardId: this.state.currentBoardId, checklist: [], comments: [], activity: [], tags: c.tags || [], sort_order: c.sort_order || 1000 }, c));
+      this.setState({ tasks }, () => this.save());
+      this.pushNotif({ kind: 'ai', title: 'Feladatok frissítve', sub: tasks.length + ' kártya érkezett', taskId: null });
+    }
+    if (d.type === 'task_center_set_users' && Array.isArray(d.users)) this.setState({ members: d.users }, () => this.save());
+  };
+
+  // ================= helpers =================
+  board() { return this.state.boards.find(b => b.id === this.state.currentBoardId) || this.state.boards[0]; }
+  memberById(id) { return this.state.members.find(m => m.id === id) || { initials: '–', color: '#9aa0a8', name: 'Nincs felelős' }; }
+  colOf(s) { return s === 'approval_wait' ? 'waiting' : s; }
+  visibleTasks() {
+    const s = this.state, q = s.search.trim().toLowerCase();
+    return s.tasks.filter(t => {
+      if (t.boardId !== s.currentBoardId) return false;
+      if (s.tab === 'mine' && t.assignee !== 'me') return false;
+      if (s.tab === 'team' && !t.assignee) return false;
+      if (s.userFilter && t.assignee !== s.userFilter) return false;
+      if (q && !((t.title || '').toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q) || (t.tags || []).join(' ').toLowerCase().includes(q))) return false;
+      return true;
+    });
+  }
+  colTasks(colKey) {
+    let arr = this.visibleTasks().filter(t => this.colOf(t.status) === colKey).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    if (this.state.dragId) arr = arr.filter(t => t.id !== this.state.dragId);
+    return arr;
+  }
+  kpis() {
+    const v = this.visibleTasks();
+    return {
+      open: v.filter(t => ['new', 'waiting', 'approval_wait'].includes(t.status)).length,
+      prog: v.filter(t => t.status === 'in_progress').length,
+      crit: v.filter(t => t.priority === 'critical').length,
+      ai: v.filter(t => t.module_key === 'ai' || (t.ai_state && t.ai_state !== 'none')).length
+    };
+  }
+
+  // ================= drag & drop =================
+  flipBefore() { this._first = {}; if (!this.root) return; this.root.querySelectorAll('[data-task-id]').forEach(el => { this._first[el.dataset.taskId] = el.getBoundingClientRect(); }); }
+  flipAfter() {
+    if (!this.root) return;
+    requestAnimationFrame(() => {
+      this.root.querySelectorAll('[data-task-id]').forEach(el => {
+        const f = this._first[el.dataset.taskId]; if (!f) return;
+        const l = el.getBoundingClientRect(); const dx = f.left - l.left, dy = f.top - l.top;
+        if (dx || dy) { el.style.transition = 'none'; el.style.transform = `translate(${dx}px,${dy}px)`; requestAnimationFrame(() => { el.style.transition = 'transform .26s cubic-bezier(.2,.8,.2,1)'; el.style.transform = ''; }); }
+      });
+    });
+  }
+  columnAt(x, y) {
+    let found = null;
+    this.root.querySelectorAll('[data-col]').forEach(el => { const r = el.getBoundingClientRect(); if (x >= r.left - 7 && x <= r.right + 7 && y >= r.top - 40 && y <= r.bottom + 40) found = el; });
+    return found;
+  }
+  indexAt(colEl, y) {
+    const cards = [...colEl.querySelectorAll('[data-task-id]')]; let idx = cards.length;
+    for (let i = 0; i < cards.length; i++) { const r = cards[i].getBoundingClientRect(); if (y < r.top + r.height / 2) { idx = i; break; } }
+    return idx;
+  }
+  onCardDown = (e) => {
+    if (e.button !== 0) return;
+    const card = e.currentTarget; const r = card.getBoundingClientRect();
+    this._press = { id: card.dataset.taskId, card, x: e.clientX, y: e.clientY, started: false, offX: e.clientX - r.left, offY: e.clientY - r.top, w: card.offsetWidth, h: card.offsetHeight };
+    window.addEventListener('pointermove', this._onMove);
+    window.addEventListener('pointerup', this._onUp);
+  };
+  _onMove = (e) => {
+    const p = this._press; if (!p) return;
+    if (!p.started) {
+      if (Math.hypot(e.clientX - p.x, e.clientY - p.y) < 6) return;
+      p.started = true;
+      const c = p.card.cloneNode(true);
+      Object.assign(c.style, { position: 'fixed', left: '0', top: '0', width: p.w + 'px', margin: '0', zIndex: '9999', pointerEvents: 'none', boxShadow: '0 18px 44px rgba(20,24,40,.28)' });
+      c.style.transform = `translate(${e.clientX - p.offX}px,${e.clientY - p.offY}px) rotate(2.5deg) scale(1.03)`;
+      c.classList.add('tc-clone'); document.body.appendChild(c); p.clone = c;
+      document.body.style.cursor = 'grabbing'; document.body.style.userSelect = 'none';
+      this.flipBefore();
+      this.setState({ dragId: p.id, dragH: p.h, dragOverCol: this.colOf(this.state.tasks.find(t => t.id === p.id).status), dragOverIndex: 0 }, () => this.flipAfter());
+    }
+    if (p.clone) p.clone.style.transform = `translate(${e.clientX - p.offX}px,${e.clientY - p.offY}px) rotate(2.5deg) scale(1.03)`;
+    const colEl = this.columnAt(e.clientX, e.clientY);
+    if (colEl) {
+      const colKey = colEl.dataset.col, idx = this.indexAt(colEl, e.clientY);
+      if (colKey !== this.state.dragOverCol || idx !== this.state.dragOverIndex) { this.flipBefore(); this.setState({ dragOverCol: colKey, dragOverIndex: idx }, () => this.flipAfter()); }
+    }
+  };
+  _onUp = () => {
+    const p = this._press; this._press = null;
+    window.removeEventListener('pointermove', this._onMove); window.removeEventListener('pointerup', this._onUp);
+    if (!p) return;
+    if (!p.started) { this.openModal(p.id, p.card); return; }
+    if (p.clone) p.clone.remove();
+    document.body.style.cursor = ''; document.body.style.userSelect = '';
+    const col = this.state.dragOverCol, idx = this.state.dragOverIndex;
+    this.flipBefore();
+    this.commitMove(p.id, col, idx);
+  };
+  commitMove(id, colKey, idx) {
+    const tasks = this.state.tasks.slice();
+    const t = tasks.find(x => x.id === id); if (!t) return;
+    const changed = t.status !== colKey;
+    if (changed && !this.can('move')) { this.toast('Nincs jogosultságod feladatot áthelyezni.', 'deny'); this.setState({ dragId: null, dragOverCol: null, dragOverIndex: 0 }, () => this.flipAfter()); return; }
+    if (changed && colKey === 'done' && !this.can('approve')) { this.toast('A „Kész" oszlopba helyezéshez jóváhagyói jog kell.', 'deny'); this.setState({ dragId: null, dragOverCol: null, dragOverIndex: 0 }, () => this.flipAfter()); return; }
+    t.status = colKey;
+    const ordered = tasks.filter(x => x.boardId === t.boardId && this.colOf(x.status) === colKey && x.id !== id).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    ordered.splice(Math.min(idx, ordered.length), 0, t);
+    ordered.forEach((x, i) => { x.sort_order = (i + 1) * 100; });
+    if (changed) t.activity = (t.activity || []).concat({ text: 'áthelyezte ide: ' + (this.COLS.find(c => c.key === colKey) || {}).label, author: 'Én', initials: 'ÉN', color: '#193b69', at: 'most' });
+    this.setState({ tasks, dragId: null, dragOverCol: null, dragOverIndex: 0 }, () => { this.flipAfter(); this.save(); });
+    this.emit('task_center_status_change', { task_id: id, status: colKey, sort_order: t.sort_order });
+    if (this.backend) this.backend.moveTask(id, colKey, t.sort_order).catch(() => {});
+  }
+
+  // ================= modal zoom =================
+  openModal(id, srcEl) {
+    this._modalOrigin = srcEl ? srcEl.getBoundingClientRect() : null;
+    this.setState({ selectedId: id, modalOpen: true, modalClosing: false }, () => this.animateModalIn());
+    this.emit('task_center_select', { task_id: id });
+  }
+  animateModalIn() {
+    const card = document.querySelector('.tc-modal-card'); if (!card) return;
+    const o = this._modalOrigin;
+    if (o) {
+      const t = card.getBoundingClientRect(); const sx = o.width / t.width;
+      card.style.transformOrigin = '0 0';
+      card.style.transform = `translate(${o.left - t.left}px,${o.top - t.top}px) scale(${sx})`;
+      card.style.opacity = '.5'; card.getBoundingClientRect();
+      const go = () => { card.style.transition = 'transform .38s cubic-bezier(.22,.9,.27,1), opacity .26s'; card.style.transform = 'none'; card.style.opacity = '1'; };
+      requestAnimationFrame(go);
+      setTimeout(go, 40); // safety: ha a rAF szünetel (háttér fül), garantáltan a végállapotba kerül
+    } else {
+      card.animate([{ opacity: 0, transform: 'scale(.95)' }, { opacity: 1, transform: 'none' }], { duration: 240, easing: 'cubic-bezier(.22,.9,.27,1)' });
+    }
+  }
+  closeModal = () => {
+    const card = document.querySelector('.tc-modal-card');
+    const src = this.root ? this.root.querySelector(`[data-task-id="${this.state.selectedId}"]`) : null;
+    const o = src ? src.getBoundingClientRect() : this._modalOrigin;
+    if (card && o) {
+      const t = card.getBoundingClientRect(); const sx = o.width / t.width;
+      card.style.transition = 'transform .3s cubic-bezier(.4,0,.2,1), opacity .26s'; card.style.transformOrigin = '0 0';
+      card.style.transform = `translate(${o.left - t.left}px,${o.top - t.top}px) scale(${sx})`; card.style.opacity = '0';
+      this.setState({ modalClosing: true });
+      clearTimeout(this._mt); this._mt = setTimeout(() => this.setState({ modalOpen: false, modalClosing: false, selectedId: null }), 300);
+    } else { this.setState({ modalOpen: false, selectedId: null }); }
+  };
+  selTask() { return this.state.tasks.find(t => t.id === this.state.selectedId); }
+  updateSel(fn) { const tasks = this.state.tasks.slice(); const t = tasks.find(x => x.id === this.state.selectedId); if (!t) return; fn(t); this.setState({ tasks }, () => this.save()); }
+  modalEditField = (e) => { if (!this.require('edit')) return; const f = e.target.dataset.field, v = e.target.value; this.updateSel(t => { t[f] = v; }); this.emit('task_center_update_field', { task_id: this.state.selectedId, field: f, value: v }); };
+  modalMove = (e) => { const st = e.currentTarget.dataset.status; if (!this.require('move')) return; if (st === 'done' && !this.require('approve', 'A „Kész" oszlopba helyezéshez jóváhagyói jog kell.')) return; this.updateSel(t => { t.status = st; t.activity = (t.activity || []).concat({ text: 'áthelyezte ide: ' + (this.COLS.find(c => c.key === st) || {}).label, author: 'Én', initials: 'ÉN', color: '#193b69', at: 'most' }); }); this.emit('task_center_status_change', { task_id: this.state.selectedId, status: st }); if (this.backend) this.backend.moveTask(this.state.selectedId, st).catch(() => {}); };
+  modalToggleCheck = (e) => { if (!this.require('edit')) return; const i = +e.currentTarget.dataset.idx; this.updateSel(t => { t.checklist[i].done = !t.checklist[i].done; const done = t.checklist.filter(c => c.done).length; t.progress = t.checklist.length ? Math.round(done / t.checklist.length * 100) : t.progress; }); };
+  modalAddCheck = () => { if (!this.require('edit')) return; const el = document.getElementById('md-check'); if (!el || !el.value.trim()) return; const v = el.value.trim(); el.value = ''; this.updateSel(t => { t.checklist.push({ text: v, done: false }); }); };
+  modalCheckKey = (e) => { if (e.key === 'Enter') this.modalAddCheck(); };
+  modalAddComment = () => { if (!this.require('comment')) return; const el = document.getElementById('md-comment'); if (!el || !el.value.trim()) return; const v = el.value.trim(); el.value = ''; this.updateSel(t => { t.comments.push({ author: 'Én', initials: 'ÉN', color: '#193b69', text: v, at: 'most' }); }); this.emit('task_center_comment', { task_id: this.state.selectedId, text: v }); };
+  modalCommentKey = (e) => { if (e.key === 'Enter') this.modalAddComment(); };
+  modalQueueAgent = () => { if (!this.require('queue_agent')) return; this.updateSel(t => { t.ai_state = t.ai_state === 'running' ? 'done' : 'running'; t.module_key = 'ai'; t.activity = (t.activity || []).concat({ text: 'AI agent feladatba sorolva', author: 'AI Agent', initials: '✦', color: '#8757e8', at: 'most' }); }); this.emit('task_center_queue_agent', { task_id: this.state.selectedId, job_type: 'task_assistant' }); if (this.backend) this.backend.queueAgent(this.state.selectedId, 'task_assistant').catch(() => {}); };
+  modalOpenSource = (e) => { const t = this.selTask(); this.emit('task_center_open_source', { task_id: e.currentTarget.dataset.id, source: t && t.source }); const url = t && t.source && t.source.source_url; if (url) window.open(url, '_blank'); };
+
+  // ================= header / nav =================
+  rootRef = (el) => { if (el) this.root = el; };
+  mapRef = (el) => { if (el) this.mapEl = el; };
+  onSearch = (e) => this.setState({ search: e.target.value });
+  selectTab = (e) => { const tab = e.currentTarget.dataset.tab; if (['mine','team','all','cal','auto','set'].includes(tab)) { this.setState({ tab, boardMenuOpen: false }); this.emit('task_center_view_change', { view: tab }); } };
+  goSettings = () => this.setState({ tab: 'set' });
+  setView = (e) => { this.setState({ view: e.currentTarget.dataset.view, boardMenuOpen: false }); };
+  toggleBoardMenu = () => this.setState({ boardMenuOpen: !this.state.boardMenuOpen });
+  selectBoard = (e) => { this.setState({ currentBoardId: e.currentTarget.dataset.board, boardMenuOpen: false, view: 'board' }, () => this.save()); };
+  addBoard = () => {
+    const palette = ['#2d9861','#5868c9','#8757e8','#d85c38','#0e9aa7','#c2750a'];
+    const id = 'b' + Math.random().toString(36).slice(2, 6);
+    const boards = this.state.boards.concat({ id, code: id, name: 'Új board', color: palette[this.state.boards.length % palette.length], x: 320 + this.state.boards.length * 30, y: 250, links: [] });
+    this.setState({ boards, boardMenuOpen: false, currentBoardId: id, view: 'map' }, () => this.save());
+  };
+
+  // ================= notifications =================
+  openNotif = () => this.setState({ notifOpen: true });
+  closeNotif = () => this.setState({ notifOpen: false });
+  markAllRead = () => { const notifications = this.state.notifications.map(n => Object.assign({}, n, { read: true })); this.setState({ notifications }, () => this.save()); };
+  clickNotif = (e) => { const n = this.state.notifications.find(x => x.id === e.currentTarget.dataset.id); if (!n) return; const notifications = this.state.notifications.map(x => x.id === n.id ? Object.assign({}, x, { read: true }) : x); this.setState({ notifications, notifOpen: !n.taskId }, () => this.save()); if (n.taskId) { const onBoard = this.state.tasks.find(t => t.id === n.taskId); if (onBoard) { this.setState({ currentBoardId: onBoard.boardId, view: 'board' }); setTimeout(() => this.openModal(n.taskId, this.root && this.root.querySelector(`[data-task-id="${n.taskId}"]`)), 60); } } };
+  pushNotif(o) { const n = Object.assign({ id: 'n' + Math.random().toString(36).slice(2, 7), at: 'most', read: false }, o); this.setState({ notifications: [n].concat(this.state.notifications) }, () => this.save()); }
+  simulateNotif = () => {
+    const samples = [
+      { kind: 'mail', title: 'Új email érkezett', sub: 'Partner visszajelzés — szerződés', module_key: 'partner', priority: 'high' },
+      { kind: 'approval', title: 'Jóváhagyásra vár', sub: 'Új rekord ellenőrzésre', module_key: 'operation', priority: 'critical' },
+      { kind: 'ai', title: 'AI javaslat', sub: 'Következő lépés generálva', module_key: 'ai', priority: 'normal' },
+      { kind: 'sla', title: 'Lejárat közeleg', sub: 'Dokumentum hiánypótlás — SLA', module_key: 'document', priority: 'high' }
+    ];
+    const s = samples[Math.floor(Math.random() * samples.length)];
+    const now = Date.now();
+    const task = { id: 'T' + Math.random().toString(36).slice(2, 8), boardId: 'main', status: s.kind === 'ai' ? 'ai_preparing' : 'new', priority: s.priority, module_key: s.module_key, assignee: 'me', title: s.sub, description: 'Automatikusan érkezett ' + s.title.toLowerCase() + ' alapján.', due_label: 'Ma', tags: ['auto'], progress: 0, ai_state: s.kind === 'ai' ? 'running' : 'none', checklist: [], comments: [], activity: [{ text: 'automatikusan létrejött (Retool/Supabase)', author: 'Rendszer', initials: 'SY', color: '#6d717a', at: 'most' }], source: { source_module: 'auto', source_type: s.kind, source_id: 'AUTO-' + now }, created_at: now, sort_order: 1 };
+    this.flipBefore();
+    this.setState({ tasks: [task].concat(this.state.tasks) }, () => { this.flipAfter(); this.save(); });
+    this.pushNotif({ kind: s.kind, title: s.title, sub: s.sub, taskId: task.id });
+  };
+
+  // ================= members =================
+  openMembers = () => this.setState({ membersOpen: true });
+  closeMembers = () => this.setState({ membersOpen: false });
+  filterUser = (e) => { this.setState({ userFilter: e.currentTarget.dataset.user, membersOpen: false }); this.emit('task_center_user_filter', { user: e.currentTarget.dataset.user }); };
+  clearUserFilter = () => this.setState({ userFilter: null });
+
+  // ================= new task =================
+  openNew = () => { if (!this.require('create')) return; this.setState({ newOpen: true, newStatus: 'new', newDue: '' }); };
+  openNewInCol = (e) => { if (!this.require('create')) return; this.setState({ newOpen: true, newStatus: e.currentTarget.dataset.status, newDue: '' }); };
+  closeNew = () => this.setState({ newOpen: false });
+  submitNew = () => {
+    if (!this.require('create')) return;
+    const g = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+    const title = g('nt-title').trim(); if (!title) { const el = document.getElementById('nt-title'); if (el) { el.style.borderColor = '#d64545'; } return; }
+    const status = g('nt-status') || this.state.newStatus;
+    const task = { id: 'T' + Math.random().toString(36).slice(2, 8), boardId: this.state.currentBoardId, status, priority: g('nt-priority') || 'normal', module_key: g('nt-module') || 'general', assignee: g('nt-assignee') || 'me', title, description: g('nt-desc'), due_label: g('nt-due'), tags: [], progress: 0, ai_state: g('nt-module') === 'ai' ? 'queued' : 'none', checklist: [], comments: [], activity: [{ text: 'létrehozta a kártyát', author: 'Én', initials: 'ÉN', color: '#193b69', at: 'most' }], source: { source_module: 'manual', source_type: 'manual', source_id: 'man-' + Date.now() }, created_at: Date.now(), sort_order: 1 };
+    this.setState({ tasks: [task].concat(this.state.tasks), newOpen: false }, () => this.save());
+    this.emit('task_center_create_task', { task });
+    if (this.backend) this.backend.createTask(task).catch(() => {});
+  };
+
+  // ================= card menu / bulk =================
+  stopProp = (e) => e.stopPropagation();
+  onCardMenu = (e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); this.setState({ cardMenuOpen: true, cardMenuId: e.currentTarget.dataset.id, cardMenuX: Math.min(r.left, window.innerWidth - 190), cardMenuY: r.bottom + 6 }); };
+  onCardMenuFromModal = (e) => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); this.setState({ cardMenuOpen: true, cardMenuId: e.currentTarget.dataset.id, cardMenuX: Math.min(r.left - 150, window.innerWidth - 190), cardMenuY: r.bottom + 6 }); };
+  closeCardMenu = () => this.setState({ cardMenuOpen: false });
+  cardMenuAct = (e) => {
+    const act = e.currentTarget.dataset.act, id = this.state.cardMenuId;
+    this.setState({ cardMenuOpen: false });
+    if (act === 'open') this.openModal(id, this.root && this.root.querySelector(`[data-task-id="${id}"]`));
+    if (act === 'del') { if (!this.require('delete')) return; this.deleteTask(id); }
+    if (act === 'select') this.toggleBulk(id);
+    if (act === 'dup') { if (!this.require('create')) return; const t = this.state.tasks.find(x => x.id === id); if (t) { const copy = Object.assign({}, JSON.parse(JSON.stringify(t)), { id: 'T' + Math.random().toString(36).slice(2, 8), title: t.title + ' (másolat)', sort_order: (t.sort_order || 100) + 1 }); this.flipBefore(); this.setState({ tasks: this.state.tasks.concat(copy) }, () => { this.flipAfter(); this.save(); }); } }
+  };
+  deleteTask(id) { const src = this.root && this.root.querySelector(`[data-task-id="${id}"]`); const done = () => { this.flipBefore(); this.setState({ tasks: this.state.tasks.filter(t => t.id !== id), selectedId: this.state.selectedId === id ? null : this.state.selectedId, modalOpen: this.state.selectedId === id ? false : this.state.modalOpen }, () => { this.flipAfter(); this.save(); }); this.emit('task_center_update_task', { task_id: id, deleted: true }); if (this.backend) this.backend.deleteTask(id).catch(() => {}); }; if (src) { src.style.transition = 'transform .2s, opacity .2s'; src.style.transform = 'scale(.85)'; src.style.opacity = '0'; setTimeout(done, 180); } else done(); }
+  toggleBulk(id) { const bulk = this.state.bulk.includes(id) ? this.state.bulk.filter(x => x !== id) : this.state.bulk.concat(id); this.setState({ bulk }); }
+  onCardCheck = (e) => { e.stopPropagation(); this.toggleBulk(e.currentTarget.dataset.id); };
+  clearBulk = () => this.setState({ bulk: [] });
+  bulkMove = (e) => { if (!this.require('move')) return; const st = e.currentTarget.dataset.status; if (st === 'done' && !this.require('approve', 'A „Kész" oszlopba helyezéshez jóváhagyói jog kell.')) return; this.flipBefore(); const tasks = this.state.tasks.map(t => this.state.bulk.includes(t.id) ? Object.assign({}, t, { status: st }) : t); this.setState({ tasks, bulk: [] }, () => { this.flipAfter(); this.save(); }); this.emit('task_center_bulk_status_change', { ids: this.state.bulk, status: st }); };
+  bulkDelete = () => { if (!this.require('delete')) return; this.flipBefore(); const ids = this.state.bulk; this.setState({ tasks: this.state.tasks.filter(t => !ids.includes(t.id)), bulk: [] }, () => { this.flipAfter(); this.save(); }); };
+
+  // ================= map =================
+  toggleConnect = () => this.setState({ connectMode: !this.state.connectMode, connectFrom: null });
+  onNodeDown = (e) => {
+    if (e.button !== 0) return;
+    const node = e.currentTarget, id = node.dataset.board, r = node.getBoundingClientRect();
+    this._np = { id, node, x: e.clientX, y: e.clientY, started: false, offX: e.clientX - r.left, offY: e.clientY - r.top };
+    window.addEventListener('pointermove', this._onNodeMove); window.addEventListener('pointerup', this._onNodeUp);
+  };
+  _onNodeMove = (e) => {
+    const p = this._np; if (!p) return;
+    if (!p.started && Math.hypot(e.clientX - p.x, e.clientY - p.y) < 6) return;
+    p.started = true;
+    const wrap = this.mapEl.getBoundingClientRect();
+    const boards = this.state.boards.map(b => b.id === p.id ? Object.assign({}, b, { x: Math.max(0, e.clientX - wrap.left - p.offX), y: Math.max(0, e.clientY - wrap.top - p.offY) }) : b);
+    this.setState({ boards });
+  };
+  _onNodeUp = () => {
+    const p = this._np; this._np = null;
+    window.removeEventListener('pointermove', this._onNodeMove); window.removeEventListener('pointerup', this._onNodeUp);
+    if (!p) return;
+    if (!p.started) {
+      if (this.state.connectMode) {
+        if (!this.state.connectFrom) this.setState({ connectFrom: p.id });
+        else if (this.state.connectFrom !== p.id) {
+          const from = this.state.connectFrom;
+          const boards = this.state.boards.map(b => b.id === from ? Object.assign({}, b, { links: b.links.includes(p.id) ? b.links.filter(x => x !== p.id) : b.links.concat(p.id) }) : b);
+          this.setState({ boards, connectFrom: null }, () => this.save());
+        } else this.setState({ connectFrom: null });
+      } else this.setState({ currentBoardId: p.id, view: 'board' }, () => this.save());
+    } else this.save();
+  };
+
+  // ================= calendar =================
+  calPrev = () => this.setState({ calOffset: this.state.calOffset - 1 });
+  calNext = () => this.setState({ calOffset: this.state.calOffset + 1 });
+  calToday = () => this.setState({ calOffset: 0 });
+  calChipClick = (e) => { e.stopPropagation(); this.openModal(e.currentTarget.dataset.taskId, e.currentTarget); };
+  calDayNew = (e) => {
+    if (!this.require('create')) return;
+    const iso = e.currentTarget.dataset.date;
+    const d = new Date(iso); const label = (d.getMonth() + 1) + '.' + d.getDate() + '.';
+    this.setState({ newOpen: true, newStatus: 'new', newDue: label });
+    setTimeout(() => { const el = document.getElementById('nt-due'); if (el) el.value = label; }, 30);
+  };
+
+  // ================= settings / role =================
+  setRole = (e) => { const r = e.currentTarget.dataset.role; this.setState({ currentRole: r }, () => this.save()); this.toast('Szerepkör: ' + (this.ROLE_LABEL[r] || r), 'info'); };
+  setMemberRole = (e) => { if (!this.require('manage_members')) { e.target.value = this.state.members.find(m => m.id === e.target.dataset.id).perm; return; } const id = e.target.dataset.id, perm = e.target.value; const members = this.state.members.map(m => m.id === id ? Object.assign({}, m, { perm }) : m); this.setState({ members }, () => this.save()); this.emit('task_center_set_member_role', { user: id, permission: perm }); };
+
+  // ================= AI agents =================
+  toggleAgent = (e) => { if (!this.require('manage_agents')) return; const id = e.currentTarget.dataset.id; const agents = this.state.agents.map(a => a.id === id ? Object.assign({}, a, { status: a.status === 'active' ? 'paused' : 'active' }) : a); this.setState({ agents }, () => this.save()); const a = agents.find(x => x.id === id); this.emit('task_center_toggle_agent', { agent_id: id, status: a.status }); };
+  toggleAgentWrite = (e) => { if (!this.require('manage_agents')) return; const id = e.currentTarget.dataset.id; const agents = this.state.agents.map(a => a.id === id ? Object.assign({}, a, { canWrite: !a.canWrite }) : a); this.setState({ agents }, () => this.save()); const a = agents.find(x => x.id === id); this.emit('task_center_set_agent_write', { agent_id: id, can_write: a.canWrite }); };
+  runAgent = (e) => {
+    if (!this.require('queue_agent')) return;
+    const id = e.currentTarget.dataset.id; const a = this.state.agents.find(x => x.id === id); if (!a) return;
+    if (a.status !== 'active') { this.toast('Az agent szünetel — előbb kapcsold be.', 'deny'); return; }
+    const agents = this.state.agents.map(x => x.id === id ? Object.assign({}, x, { runs: x.runs + 1, lastRun: 'most' }) : x);
+    this.setState({ agents }, () => this.save());
+    this.emit('task_center_queue_agent', { agent_id: id, job_type: a.type });
+    if (this.backend) this.backend.queueAgent(null, a.type).catch(() => {});
+    this.pushNotif({ kind: 'ai', title: a.name + ' lefutott', sub: a.canWrite ? 'Eredményt írt a boardra.' : 'Csak javaslatot készített (nincs írási jog).', taskId: null });
+    this.toast(a.name + ' elindítva', 'ok');
+  };
+
+  // ================= automations =================
+  addAutomation = () => { if (!this.require('manage_automations')) return; const id = 'au' + Math.random().toString(36).slice(2, 6); const automations = this.state.automations.concat({ id, name: 'Új szabály', enabled: false, trigger: 'task_created', action: 'notify', agentId: '', runs: 0, lastRun: '–' }); this.setState({ automations }, () => this.save()); };
+  toggleAutomation = (e) => { if (!this.require('manage_automations')) return; const id = e.currentTarget.dataset.id; const automations = this.state.automations.map(a => a.id === id ? Object.assign({}, a, { enabled: !a.enabled }) : a); this.setState({ automations }, () => this.save()); const a = automations.find(x => x.id === id); this.emit('task_center_toggle_automation', { automation_id: id, enabled: a.enabled }); };
+  deleteAutomation = (e) => { if (!this.require('manage_automations')) return; const id = e.currentTarget.dataset.id; this.setState({ automations: this.state.automations.filter(a => a.id !== id) }, () => this.save()); };
+  editAutomationName = (e) => { if (!this.can('manage_automations')) return; const id = e.target.dataset.id, v = e.target.value; const automations = this.state.automations.map(a => a.id === id ? Object.assign({}, a, { name: v }) : a); this.setState({ automations }, () => this.save()); };
+  editAutomationField = (e) => { if (!this.require('manage_automations')) return; const id = e.target.dataset.id, f = e.target.dataset.field, v = e.target.value; const automations = this.state.automations.map(a => a.id === id ? Object.assign({}, a, { [f]: v }) : a); this.setState({ automations }, () => this.save()); this.emit('task_center_update_automation', { automation_id: id, field: f, value: v }); };
+  runAutomation = (e) => {
+    if (!this.require('manage_automations')) return;
+    const id = e.currentTarget.dataset.id; const r = this.state.automations.find(a => a.id === id); if (!r) return;
+    const automations = this.state.automations.map(a => a.id === id ? Object.assign({}, a, { runs: a.runs + 1, lastRun: 'most' }) : a);
+    this.setState({ automations }, () => this.save());
+    const ag = this.state.agents.find(a => a.id === r.agentId);
+    this.emit('task_center_run_automation', { automation_id: id, trigger: r.trigger, action: r.action, agent_id: r.agentId });
+    this.pushNotif({ kind: r.action === 'queue_agent' ? 'ai' : 'approval', title: 'Automatizmus lefutott', sub: r.name + (ag ? ' · ' + ag.name : ''), taskId: null });
+    this.toast('„' + r.name + '" lefutott', 'ok');
+  };
+
+  // ================= render =================
+  renderVals() {
+    if (!this.state.ready) return { ready: false };
+    const s = this.state, brd = this.board(), me = this.memberById('me');
+    const k = this.kpis();
+    const isDrag = !!s.dragId;
+
+    // members stack
+    const memberStack = s.members.slice(0, 4).map(m => ({
+      initials: m.initials,
+      style: `position:relative;width:30px;height:30px;border-radius:50%;background:${m.color};color:#fff;font:600 11px Inter;display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-9px;`,
+      dot: m.online ? 'position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:#22a565;border:2px solid #fff;' : 'display:none;'
+    }));
+    if (memberStack[0]) memberStack[0].style = memberStack[0].style.replace('margin-left:-9px;', '');
+
+    // tabs
+    const tabDefs = [['mine','Saját nézet'],['team','Csapat'],['all','Minden jogosult'],['cal','Naptár'],['auto','Automatizmusok'],['set','Beállítások']];
+    const tabs = tabDefs.map(([key, label]) => {
+      const active = s.tab === key;
+      return { key, label, style: `padding:13px 12px;font:${active?600:500} 13px Inter;color:${active?'#17181c':'#9aa0a8'};border-bottom:2px solid ${active?'#f8991c':'transparent'};cursor:pointer;transition:color .15s;` };
+    });
+
+    // boards menu rows
+    const boardCount = (id) => s.tasks.filter(t => t.boardId === id).length;
+    const boards = s.boards.map(b => ({ id: b.id, name: b.name, count: boardCount(b.id),
+      dot: `width:9px;height:9px;border-radius:50%;background:${b.color};flex:0 0 auto;`,
+      rowStyle: `display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;cursor:pointer;font:${b.id===s.currentBoardId?600:500} 13px Inter;color:#17181c;background:${b.id===s.currentBoardId?'#fff6ec':'transparent'};` }));
+
+    // columns
+    const columns = this.COLS.map(c => {
+      const real = this.colTasks(c.key);
+      let cards = real.map(t => this.cardVM(t));
+      if (isDrag && s.dragOverCol === c.key) {
+        const ph = { isPlaceholder: true, isReal: false, phStyle: `height:${s.dragH}px;border:2px dashed #f8b65a;background:rgba(248,153,28,.07);border-radius:11px;margin-bottom:9px;` };
+        cards = cards.slice(); cards.splice(Math.min(s.dragOverIndex, cards.length), 0, ph);
+      }
+      const count = this.visibleTasks().filter(t => this.colOf(t.status) === c.key).length;
+      return { key: c.key, label: c.label, color: c.color, count, empty: cards.length === 0,
+        dot: `width:9px;height:9px;border-radius:50%;background:${c.color};`,
+        bodyStyle: `display:flex;flex-direction:column;gap:9px;min-height:80px;padding:3px;border-radius:12px;background:${isDrag&&s.dragOverCol===c.key?'rgba(248,153,28,.05)':'transparent'};transition:background .15s;`,
+        cards };
+    });
+
+    // selected modal VM
+    let sel = null; const st = this.selTask();
+    if (st) sel = this.modalVM(st);
+
+    // map
+    const nodeW = 190, nodeH = 96;
+    const center = (b) => ({ x: b.x + nodeW / 2, y: b.y + nodeH / 2 });
+    const mapLines = [];
+    s.boards.forEach(b => (b.links || []).forEach(lid => { const tb = s.boards.find(x => x.id === lid); if (!tb) return; const a = center(b), c = center(tb); const mx = (a.x + c.x) / 2; mapLines.push({ d: `M ${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${c.y}, ${c.x} ${c.y}` }); }));
+    const mapNodes = s.boards.map(b => {
+      const cnt = boardCount(b.id), crit = s.tasks.filter(t => t.boardId === b.id && t.priority === 'critical').length;
+      const sel2 = s.connectFrom === b.id;
+      return { id: b.id, name: b.name, count: cnt, crit,
+        dot: `width:11px;height:11px;border-radius:50%;background:${b.color};`,
+        style: `position:absolute;left:${b.x}px;top:${b.y}px;width:${nodeW}px;height:${nodeH}px;background:#fff;border:1.5px solid ${sel2?'#f8991c':(b.id===s.currentBoardId?'#f8b65a':'#e3e5ea')};border-radius:14px;box-shadow:0 4px 14px rgba(20,24,40,.08)${sel2?',0 0 0 3px rgba(248,153,28,.25)':''};padding:13px 15px;cursor:pointer;user-select:none;transition:box-shadow .16s,transform .16s,border-color .16s;` };
+    });
+
+    const bulkButtons = this.COLS.map(c => ({ key: c.key, label: c.label, dot: `width:7px;height:7px;border-radius:50%;background:${c.color};` }));
+
+    // ----- screen routing -----
+    const boardTab = ['mine', 'team', 'all'].includes(s.tab);
+
+    // ----- calendar VM -----
+    const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const cbase = new Date(today.getFullYear(), today.getMonth() + s.calOffset, 1);
+    const cy = cbase.getFullYear(), cm = cbase.getMonth();
+    const startDow = (new Date(cy, cm, 1).getDay() + 6) % 7;
+    const gridStart = new Date(cy, cm, 1 - startDow);
+    const vis = this.visibleTasks();
+    let calCount = 0;
+    const weeks = [];
+    for (let w = 0; w < 6; w++) {
+      const days = [];
+      for (let d = 0; d < 7; d++) {
+        const date = new Date(gridStart); date.setDate(gridStart.getDate() + w * 7 + d);
+        const inMonth = date.getMonth() === cm;
+        const isToday = sameDay(date, today);
+        const dayTasks = vis.filter(t => t.due_at && sameDay(new Date(t.due_at), date));
+        if (inMonth) calCount += dayTasks.length;
+        const chips = dayTasks.slice(0, 3).map(t => { const p = this.PRIO[t.priority] || this.PRIO.normal; const isAi = t.module_key === 'ai' || (t.ai_state && t.ai_state !== 'none'); return { id: t.id, title: t.title,
+          dot: `width:6px;height:6px;border-radius:50%;background:${isAi ? '#8757e8' : p.color};flex:0 0 auto;`,
+          style: `display:flex;align-items:center;gap:5px;font:600 10.5px Inter;color:#3a3f49;background:${isAi ? '#f3ecfd' : p.bg};padding:3px 6px;border-radius:5px;cursor:pointer;` }; });
+        days.push({ iso: date.toISOString(), num: date.getDate(), inMonth, isToday, chips, hasMore: dayTasks.length > 3, more: dayTasks.length - 3,
+          numStyle: `font:${isToday ? 700 : 600} 12px Inter;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;${isToday ? 'background:#f8991c;color:#fff;' : 'color:' + (inMonth ? '#17181c' : '#c4c8cf') + ';'}`,
+          style: `min-height:96px;background:${inMonth ? '#fff' : '#fafbfc'};border:1px solid ${isToday ? '#f8b65a' : '#e8eaee'};border-radius:11px;padding:8px;display:flex;flex-direction:column;cursor:pointer;transition:border-color .14s,box-shadow .14s;` });
+      }
+      weeks.push({ days });
+    }
+    const cal = { monthLabel: cbase.toLocaleDateString('hu-HU', { year: 'numeric', month: 'long' }), count: calCount, weeks, weekdays: ['Hét', 'Ked', 'Sze', 'Csü', 'Pén', 'Szo', 'Vas'] };
+
+    // ----- automations VM -----
+    const canAuto = this.can('manage_automations');
+    const agentName = (id) => { const a = s.agents.find(x => x.id === id); return a ? a.name : ''; };
+    const selStyle = (locked) => `height:30px;padding:0 8px;border:1px solid #e3e5ea;border-radius:7px;font:600 11px Inter;color:#17181c;background:${locked ? '#f5f6f8' : '#fff'};outline:none;cursor:${locked ? 'not-allowed' : 'pointer'};`;
+    const auto = {
+      activeCount: s.automations.filter(a => a.enabled).length,
+      addBtnStyle: `height:34px;padding:0 14px;display:flex;align-items:center;gap:6px;border-radius:9px;font:600 13px Inter;cursor:pointer;${canAuto ? 'background:#f8991c;color:#fff;box-shadow:0 2px 8px rgba(248,153,28,.3);' : 'background:#f0f1f4;color:#aab0b9;'}`,
+      permNote: canAuto ? '' : '(Admin jog kell a szerkesztéshez — most csak megtekintés.)',
+      triggers: this.TRIGGERS.map(t => ({ v: t[0], l: t[1] })),
+      actions: this.ACTIONS.map(a => ({ v: a[0], l: a[1] })),
+      agentOpts: s.agents.map(a => ({ v: a.id, l: a.name })),
+      rules: s.automations.map(r => ({ id: r.id, name: r.name, trigger: r.trigger, action: r.action, agentId: r.agentId || '', locked: !canAuto,
+        runsLabel: r.runs + '× · ' + r.lastRun,
+        cardStyle: `background:#fff;border:1px solid ${r.enabled ? '#e3e5ea' : '#eceef1'};border-radius:13px;padding:15px 16px;opacity:${r.enabled ? 1 : .72};transition:opacity .2s;`,
+        toggleStyle: `width:38px;height:22px;border-radius:20px;background:${r.enabled ? '#22a565' : '#cdd2da'};position:relative;cursor:${canAuto ? 'pointer' : 'not-allowed'};flex:0 0 auto;transition:background .2s;`,
+        knobStyle: `position:absolute;top:2px;left:${r.enabled ? '18px' : '2px'};width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s;`,
+        nameStyle: `border:none;outline:none;font:700 14px Inter;color:#17181c;background:transparent;padding:2px 4px;border-radius:6px;width:auto;min-width:180px;${canAuto ? '' : 'pointer-events:none;'}`,
+        selStyle: selStyle(!canAuto),
+        agentWrap: `display:${r.action === 'queue_agent' || r.agentId ? 'inline-flex' : 'none'};align-items:center;gap:6px;`,
+        runBtnStyle: `font:600 11px Inter;color:#6d717a;padding:5px 11px;border:1px solid #e3e5ea;border-radius:7px;cursor:pointer;`,
+        delBtnStyle: `width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:7px;color:#c4c8cf;cursor:pointer;${canAuto ? '' : 'opacity:.4;pointer-events:none;'}` }))
+    };
+
+    // ----- settings VM -----
+    const canMembers = this.can('manage_members');
+    const conn = this.backend && this.backend.mode === 'supabase';
+    const agentActive = s.agents.filter(a => a.status === 'active').length;
+    const setCardStyle = `background:#fff;border:1px solid #e3e5ea;border-radius:15px;padding:18px 20px;`;
+    const set = {
+      connDot: `width:10px;height:10px;border-radius:50%;background:${conn ? '#22a565' : '#c2750a'};flex:0 0 auto;${conn ? 'animation:tcPulse 2s infinite;' : ''}`,
+      connTitle: conn ? 'Supabase csatlakoztatva' : 'Lokális mód (localStorage)',
+      connSub: conn ? 'Élő adat + Realtime frissítés a task_center sémából.' : 'Add meg az URL-t és anon key-t a supabase-adapter.js-ben az élesítéshez.',
+      connBadge: `font:700 10px Inter;padding:3px 9px;border-radius:20px;${conn ? 'background:#e8f6ee;color:#22a565;' : 'background:#fdf2e2;color:#c2750a;'}`,
+      connMode: conn ? 'ÉLŐ' : 'DEMO',
+      roles: ['viewer', 'member', 'approver', 'admin'].map(r => ({ key: r, label: this.ROLE_LABEL[r],
+        dot: `width:8px;height:8px;border-radius:50%;background:${this.ROLE_DOT[r]};`,
+        style: `display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:10px;cursor:pointer;font:600 12px Inter;border:1.5px solid ${s.currentRole === r ? '#f8991c' : '#e3e5ea'};background:${s.currentRole === r ? '#fff6ec' : '#fff'};color:#17181c;transition:all .14s;` })),
+      permList: (this.PERM_DESC[s.currentRole] || []).map(d => ({ label: d, tick: '✓', icon: 'width:16px;height:16px;border-radius:5px;background:#e8f6ee;color:#22a565;font-size:10px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;' })),
+      agentActive,
+      agents: s.agents.map(a => ({ id: a.id, name: a.name, desc: a.desc, icon: a.icon, model: a.model,
+        statusLabel: a.status === 'active' ? 'aktív' : 'szünetel',
+        statusBadge: `font:700 9px Inter;padding:2px 7px;border-radius:20px;${a.status === 'active' ? 'background:#e8f6ee;color:#22a565;' : 'background:#f0f1f4;color:#9aa0a8;'}`,
+        runsLabel: a.runs + ' futás',
+        writeLabel: a.canWrite ? 'írhat a boardra' : 'csak olvas',
+        iconStyle: `width:40px;height:40px;border-radius:11px;background:#f3ecfd;color:#8757e8;font-size:17px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;`,
+        cardStyle: `display:flex;gap:13px;align-items:flex-start;padding:13px 14px;border:1px solid #e3e5ea;border-radius:12px;background:#fafbfc;`,
+        toggleStyle: `width:38px;height:22px;border-radius:20px;background:${a.status === 'active' ? '#22a565' : '#cdd2da'};position:relative;cursor:${this.can('manage_agents') ? 'pointer' : 'not-allowed'};transition:background .2s;`,
+        knobStyle: `position:absolute;top:2px;left:${a.status === 'active' ? '18px' : '2px'};width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s;`,
+        writeBtnLabel: a.canWrite ? 'Írás: BE' : 'Írás: KI',
+        writeBtnStyle: `font:600 10px Inter;padding:4px 9px;border-radius:7px;cursor:${this.can('manage_agents') ? 'pointer' : 'not-allowed'};border:1px solid ${a.canWrite ? '#cbe8d8' : '#e3e5ea'};background:${a.canWrite ? '#e8f6ee' : '#fff'};color:${a.canWrite ? '#22a565' : '#9aa0a8'};white-space:nowrap;`,
+        runBtnStyle: `font:600 10px Inter;padding:4px 9px;border-radius:7px;cursor:pointer;border:1px solid #ebdff9;background:#f3ecfd;color:#8757e8;white-space:nowrap;` })),
+      memberNote: canMembers ? 'Állítsd a tagok jogosultságát. Élesben ez a board_members.permission_level.' : 'Csak megtekintés — a jogosultságok módosításához admin jog kell.',
+      roleOpts: ['viewer', 'member', 'approver', 'admin'].map(r => ({ v: r, l: this.ROLE_LABEL[r] })),
+      members: s.members.map(m => ({ id: m.id, name: m.name, initials: m.initials, role: m.perm || 'member', locked: !canMembers, online: m.online ? 'online' : 'offline',
+        avatarStyle: `width:36px;height:36px;border-radius:50%;background:${m.color};color:#fff;font:600 12px Inter;display:flex;align-items:center;justify-content:center;flex:0 0 auto;`,
+        selStyle: selStyle(!canMembers) })),
+      setCardStyle
+    };
+
+    const roleColor = this.ROLE_DOT[s.currentRole] || '#9aa0a8';
+
+    return {
+      ready: true, rootRef: this.rootRef, mapRef: this.mapRef,
+      search: s.search, onSearch: this.onSearch,
+      memberStack, hasExtra: s.members.length > 4, memberExtra: s.members.length - 4,
+      bellStyle: 'display:flex;flex-direction:column;align-items:center;' + (s.notifAnim ? 'animation:tcRing .8s ease;' : ''),
+      hasUnread: s.notifications.some(n => !n.read), unreadCount: s.notifications.filter(n => !n.read).length,
+      openNotif: this.openNotif, openMembers: this.openMembers, openNew: this.openNew,
+      tabs, selectTab: this.selectTab, goSettings: this.goSettings,
+      showViewToggle: boardTab,
+      roleLabel: this.ROLE_LABEL[s.currentRole] || s.currentRole,
+      roleChipStyle: `display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;border:1px solid #e3e5ea;border-radius:9px;cursor:pointer;font:600 12px Inter;color:#17181c;background:#fff;`,
+      roleDotStyle: `width:8px;height:8px;border-radius:50%;background:${roleColor};`,
+      setView: this.setView,
+      boardToggleStyle: `padding:6px 14px;border-radius:7px;font:600 12px Inter;cursor:pointer;transition:all .15s;background:${s.view==='board'?'#fff':'transparent'};color:${s.view==='board'?'#17181c':'#9aa0a8'};box-shadow:${s.view==='board'?'0 1px 3px rgba(20,24,40,.1)':'none'};`,
+      mapToggleStyle: `padding:6px 14px;border-radius:7px;font:600 12px Inter;cursor:pointer;transition:all .15s;background:${s.view==='map'?'#fff':'transparent'};color:${s.view==='map'?'#17181c':'#9aa0a8'};box-shadow:${s.view==='map'?'0 1px 3px rgba(20,24,40,.1)':'none'};`,
+      boardName: brd.name, boardDotStyle: `width:9px;height:9px;border-radius:50%;background:${brd.color};`,
+      boardMenuOpen: s.boardMenuOpen, toggleBoardMenu: this.toggleBoardMenu, boards, selectBoard: this.selectBoard, addBoard: this.addBoard,
+      hasUserFilter: !!s.userFilter, userFilterName: s.userFilter ? this.memberById(s.userFilter).name : '', clearUserFilter: this.clearUserFilter,
+      isBoard: boardTab && s.view === 'board', isMap: boardTab && s.view === 'map',
+      isCal: s.tab === 'cal', isAuto: s.tab === 'auto', isSet: s.tab === 'set',
+      kpis: k, columns,
+      openNewInCol: this.openNewInCol, onCardDown: this.onCardDown, onCardMenu: this.onCardMenu, stopProp: this.stopProp,
+      // map
+      mapLines, mapNodes, onNodeDown: this.onNodeDown,
+      toggleConnect: this.toggleConnect,
+      connectBtnStyle: `height:34px;padding:0 14px;display:flex;align-items:center;gap:6px;border-radius:9px;font:600 13px Inter;cursor:pointer;box-shadow:0 1px 3px rgba(20,24,40,.06);${s.connectMode?'background:#f8991c;color:#fff;':'background:#fff;color:#17181c;border:1px solid #e3e5ea;'}`,
+      connectLabel: s.connectMode ? '⛓ Kapcsolat mód — kattints 2 boardra' : '⛓ Kapcsolat',
+      connectHint: s.connectMode ? (s.connectFrom ? 'Most kattints a másik boardra' : 'Húzd a boardokat, vagy köss össze kettőt') : 'Húzd a boardokat · kattints a megnyitáshoz',
+      // bulk
+      hasBulk: s.bulk.length > 0, bulkCount: s.bulk.length, bulkButtons, bulkMove: this.bulkMove, bulkDelete: this.bulkDelete, clearBulk: this.clearBulk,
+      // card menu
+      cardMenuOpen: s.cardMenuOpen, closeCardMenu: this.closeCardMenu, cardMenuAct: this.cardMenuAct,
+      cardMenuStyle: `position:fixed;left:${s.cardMenuX}px;top:${s.cardMenuY}px;width:180px;background:#fff;border:1px solid #e3e5ea;border-radius:11px;box-shadow:0 14px 36px rgba(20,24,40,.18);padding:6px;animation:tcFadeUp .14s ease;`,
+      // calendar / automations / settings
+      isCalReady: true, cal, calPrev: this.calPrev, calNext: this.calNext, calToday: this.calToday, calChipClick: this.calChipClick, calDayNew: this.calDayNew,
+      auto, addAutomation: this.addAutomation, toggleAutomation: this.toggleAutomation, deleteAutomation: this.deleteAutomation, runAutomation: this.runAutomation, editAutomationName: this.editAutomationName, editAutomationField: this.editAutomationField,
+      set, setRole: this.setRole, setMemberRole: this.setMemberRole, toggleAgent: this.toggleAgent, toggleAgentWrite: this.toggleAgentWrite, runAgent: this.runAgent,
+      // toast
+      hasToast: !!s.toast, toastMsg: s.toast ? s.toast.msg : '', toastSign: s.toast ? (s.toast.kind === 'deny' ? '⃠' : s.toast.kind === 'ok' ? '✓' : 'ⓘ') : '',
+      toastIcon: s.toast ? `font-size:13px;color:${s.toast.kind === 'deny' ? '#ff8a8a' : s.toast.kind === 'ok' ? '#7ee0a8' : '#9ab8ff'};` : '',
+      toastStyle: `position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#17181c;color:#fff;border-radius:11px;box-shadow:0 14px 40px rgba(20,24,40,.32);padding:11px 18px;display:flex;align-items:center;gap:9px;z-index:120;font:600 13px Inter;animation:tcFadeUp .2s ease;`,
+      // notifications
+      notifBackdropStyle: `position:fixed;inset:0;background:rgba(20,24,40,.28);z-index:80;transition:opacity .25s;opacity:${s.notifOpen?1:0};pointer-events:${s.notifOpen?'auto':'none'};`,
+      notifStyle: `position:fixed;top:0;right:0;width:380px;max-width:92vw;height:100vh;background:#fff;box-shadow:-12px 0 40px rgba(20,24,40,.16);z-index:85;display:flex;flex-direction:column;overflow:auto;transition:transform .32s cubic-bezier(.22,.9,.27,1);transform:translateX(${s.notifOpen?'0':'104%'});`,
+      closeNotif: this.closeNotif, markAllRead: this.markAllRead, clickNotif: this.clickNotif, simulateNotif: this.simulateNotif,
+      notifications: s.notifications.map(n => this.notifVM(n)), notifEmpty: s.notifications.length === 0,
+      // members drawer
+      membersBackdropStyle: `position:fixed;inset:0;background:rgba(20,24,40,.28);z-index:80;transition:opacity .25s;opacity:${s.membersOpen?1:0};pointer-events:${s.membersOpen?'auto':'none'};`,
+      membersStyle: `position:fixed;top:0;right:0;width:360px;max-width:92vw;height:100vh;background:#fff;box-shadow:-12px 0 40px rgba(20,24,40,.16);z-index:85;display:flex;flex-direction:column;overflow:auto;transition:transform .32s cubic-bezier(.22,.9,.27,1);transform:translateX(${s.membersOpen?'0':'104%'});`,
+      closeMembers: this.closeMembers, memberCount: s.members.length, filterUser: this.filterUser,
+      allMembers: s.members.map(m => ({ id: m.id, name: m.name, initials: m.initials, role: m.role, statusLabel: m.online ? 'online' : 'offline',
+        avatarStyle: `position:relative;width:38px;height:38px;border-radius:50%;background:${m.color};color:#fff;font:600 13px Inter;display:flex;align-items:center;justify-content:center;flex:0 0 auto;`,
+        dot: m.online ? 'position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;background:#22a565;border:2px solid #fff;' : 'position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;background:#c4c8cf;border:2px solid #fff;' })),
+      // new modal
+      newOpen: s.newOpen, closeNew: this.closeNew, submitNew: this.submitNew,
+      // detail modal
+      modalOpen: s.modalOpen, closeModal: this.closeModal, sel,
+      modalBackdropStyle: `position:absolute;inset:0;background:rgba(20,24,40,.5);backdrop-filter:blur(3px);transition:opacity .3s;opacity:${s.modalClosing?0:1};`,
+      modalEditField: this.modalEditField, modalMove: this.modalMove, modalToggleCheck: this.modalToggleCheck, modalAddCheck: this.modalAddCheck, modalCheckKey: this.modalCheckKey,
+      modalAddComment: this.modalAddComment, modalCommentKey: this.modalCommentKey, modalQueueAgent: this.modalQueueAgent, modalOpenSource: this.modalOpenSource, onCardMenuFromModal: this.onCardMenuFromModal
+    };
+  }
+
+  cardVM(t) {
+    const p = this.PRIO[t.priority] || this.PRIO.normal, m = this.memberById(t.assignee);
+    const isAi = t.module_key === 'ai' || (t.ai_state && t.ai_state !== 'none');
+    const aiLabel = this.AI_LABEL[t.ai_state] || '';
+    const done = t.checklist ? t.checklist.filter(c => c.done).length : 0, total = t.checklist ? t.checklist.length : 0;
+    const progColor = (t.status === 'ai_preparing' || t.ai_state === 'running') ? '#8757e8' : '#f8991c';
+    const selected = this.state.bulk.includes(t.id);
+    return {
+      id: t.id, isReal: true, isPlaceholder: false, title: t.title, moduleKey: t.module_key,
+      priorityLabel: p.label, priorityStyle: `font:600 10px Inter;color:${p.color};background:${p.bg};padding:3px 7px;border-radius:6px;`,
+      isAi, aiLabel: aiLabel || 'AI', aiSpinStyle: t.ai_state === 'running' ? 'display:inline-block;animation:tcSpin 2.4s linear infinite;' : 'display:inline-block;',
+      hasProgress: (t.progress || 0) > 0, progressStyle: `width:${t.progress||0}%;height:100%;background:${progColor};border-radius:3px;transition:width .3s;`,
+      hasTags: (t.tags || []).length > 0, tagsShown: (t.tags || []).slice(0, 2),
+      assigneeInitials: m.initials, assigneeStyle: `width:24px;height:24px;border-radius:50%;background:${m.color};color:#fff;font:600 9px Inter;display:flex;align-items:center;justify-content:center;flex:0 0 auto;`,
+      hasChecklist: total > 0, checklistText: done + '/' + total,
+      hasComments: (t.comments || []).length > 0, commentCount: (t.comments || []).length,
+      dueLabel: t.due_label || '', dueStyle: `font:500 11px Inter;color:${t.priority==='critical'?'#d64545':'#6d717a'};`,
+      style: `position:relative;background:#fff;border:1px solid ${selected?'#f8991c':'#e3e5ea'};border-radius:11px;padding:${this.props.compact?'9px 11px':'12px'};cursor:grab;box-shadow:${selected?'0 0 0 2px rgba(248,153,28,.35)':'0 1px 2px rgba(20,24,40,.04)'};transition:box-shadow .16s,border-color .16s,transform .16s;touch-action:none;`
+    };
+  }
+
+  notifVM(n) {
+    const icons = { mail: '✉', approval: '✓', ai: '✦', sla: '⏱', default: '•' };
+    const colors = { mail: '#3b82f6', approval: '#22a565', ai: '#8757e8', sla: '#c2750a', default: '#6d717a' };
+    const col = colors[n.kind] || colors.default;
+    return { id: n.id, title: n.title, sub: n.sub, at: n.at, unread: !n.read, icon: icons[n.kind] || icons.default,
+      iconStyle: `width:34px;height:34px;border-radius:9px;background:${col}1a;color:${col};font-size:15px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;`,
+      style: `display:flex;gap:11px;padding:12px;border:1px solid ${n.read?'#eceef1':'#f3e0c8'};background:${n.read?'#fff':'#fffaf2'};border-radius:11px;margin-bottom:7px;cursor:pointer;transition:background .15s,border-color .15s;` };
+  }
+
+  modalVM(t) {
+    const p = this.PRIO[t.priority] || this.PRIO.normal, m = this.memberById(t.assignee);
+    const colDef = this.COLS.find(c => c.key === this.colOf(t.status)) || this.COLS[0];
+    const done = t.checklist.filter(c => c.done).length, total = t.checklist.length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const feed = (t.comments || []).map(c => ({ author: c.author, initials: c.initials, text: c.text, at: c.at, avatarStyle: `width:28px;height:28px;border-radius:50%;background:${c.color};color:#fff;font:600 10px Inter;display:flex;align-items:center;justify-content:center;flex:0 0 auto;` }))
+      .concat((t.activity || []).map(a => ({ author: a.author, initials: a.initials, text: a.text, at: a.at, avatarStyle: `width:28px;height:28px;border-radius:50%;background:${a.color};color:#fff;font:600 10px Inter;display:flex;align-items:center;justify-content:center;flex:0 0 auto;` })));
+    const aiState = t.ai_state || 'none';
+    const statusButtons = this.COLS.map(c => { const active = c.key === this.colOf(t.status); return { key: c.key, label: c.label,
+      dot: `width:8px;height:8px;border-radius:50%;background:${c.color};`,
+      style: `display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;cursor:pointer;font:600 12px Inter;border:1px solid ${active?c.color:'#e8eaee'};background:${active?c.color+'14':'#fff'};color:#17181c;transition:all .14s;`,
+      checkStyle: `color:${c.color};font-size:12px;opacity:${active?1:0};` }; });
+    return {
+      id: t.id, title: t.title, description: t.description || '', moduleKey: t.module_key,
+      priorityLabel: p.label, priorityStyle: `font:600 10px Inter;color:${p.color};background:${p.bg};padding:4px 9px;border-radius:6px;`,
+      statusLabel: colDef.label, statusPillStyle: `font:600 10px Inter;color:${colDef.color};background:${colDef.color}18;padding:4px 9px;border-radius:6px;`,
+      accentStyle: `height:5px;background:linear-gradient(90deg,${p.color},${colDef.color});`,
+      checklistText: done + '/' + total, checklistBarStyle: `width:${pct}%;height:100%;background:#f8991c;border-radius:4px;transition:width .3s;`,
+      checklist: t.checklist.map((c, i) => ({ idx: i, text: c.text,
+        boxStyle: `width:19px;height:19px;border-radius:6px;border:1.5px solid ${c.done?'#22a565':'#c4c8cf'};background:${c.done?'#22a565':'#fff'};color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;flex:0 0 auto;transition:all .14s;`,
+        tick: c.done ? '✓' : '', textStyle: `font:500 13px Inter;color:${c.done?'#aab0b9':'#3a3f49'};text-decoration:${c.done?'line-through':'none'};` })),
+      assigneeName: m.name, assigneeInitials: m.initials, assigneeStyle: `width:26px;height:26px;border-radius:50%;background:${m.color};color:#fff;font:600 10px Inter;display:flex;align-items:center;justify-content:center;flex:0 0 auto;`,
+      dueLabel: t.due_label || 'Nincs', dueStyle: `font:600 12px Inter;color:${t.priority==='critical'?'#d64545':'#17181c'};background:${t.priority==='critical'?'#fdecec':'#f0f1f4'};padding:4px 10px;border-radius:7px;`,
+      sourceLabel: (t.source && t.source.source_type ? t.source.source_type : 'rekord') + (t.source && t.source.source_id ? ' · ' + t.source.source_id : ''),
+      statusButtons,
+      aiStateLabel: ({ running: 'fut…', queued: 'sorban', done: 'kész', error: 'hiba', suggested: 'javasolt', none: 'inaktív' })[aiState],
+      aiSpinStyle: aiState === 'running' ? 'display:inline-block;animation:tcSpin 2.4s linear infinite' : 'display:inline-block',
+      aiBtnLabel: aiState === 'running' ? 'AI futtatás leállítása' : 'AI előkészítés indítása',
+      feed
+    };
+  }
+}
+</script>
+</body>
+</html>

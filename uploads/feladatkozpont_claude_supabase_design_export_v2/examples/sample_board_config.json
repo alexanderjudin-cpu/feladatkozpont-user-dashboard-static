@@ -1,0 +1,11 @@
+{
+  "board_key": "main_user_dashboard",
+  "board_title": "Feladatközpont",
+  "default_view": "mine",
+  "allow_comments": true,
+  "allow_messages": false,
+  "allow_notifications": true,
+  "allow_ai_agent": true,
+  "show_user_presence": true,
+  "max_visible_avatars": 4
+}

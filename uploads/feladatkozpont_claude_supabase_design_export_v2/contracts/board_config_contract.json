@@ -1,0 +1,49 @@
+{
+  "board_key": "main_user_dashboard",
+  "title": "Feladatközpont",
+  "tabs": [
+    "mine",
+    "team",
+    "all",
+    "calendar",
+    "automations",
+    "settings"
+  ],
+  "columns": [
+    {
+      "status_key": "new",
+      "label": "Új",
+      "icon": "＋",
+      "color": "#2f80ed"
+    },
+    {
+      "status_key": "in_progress",
+      "label": "Folyamatban",
+      "icon": "▶",
+      "color": "#f8991c"
+    },
+    {
+      "status_key": "waiting",
+      "label": "Jóváhagyásra vár",
+      "icon": "◷",
+      "color": "#c98912"
+    },
+    {
+      "status_key": "ai_preparing",
+      "label": "AI előkészítés",
+      "icon": "✦",
+      "color": "#8757e8"
+    },
+    {
+      "status_key": "done",
+      "label": "Kész",
+      "icon": "✓",
+      "color": "#20a464"
+    }
+  ],
+  "theme": {
+    "accent": "#f8991c",
+    "background": "#f5f6f8",
+    "surface": "#ffffff"
+  }
+}

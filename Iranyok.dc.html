@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="design_doc_mode" content="canvas">
+<style>
+  * { box-sizing: border-box; }
+</style>
+</helmet>
+
+<!-- ================= DIRECTION A — SOFT TRELLO ================= -->
+<div style="position:absolute; left:0px; top:0px; width:600px;">
+  <div data-drags-parent="1" style="font:600 13px 'Inter',sans-serif; color:#6d717a; margin-bottom:10px; letter-spacing:.04em; text-transform:uppercase;">A · Soft Trello</div>
+  <div style="background:#f5f6f8; border-radius:14px; box-shadow:0 1px 3px rgba(20,24,40,.08); overflow:hidden; font-family:'Inter',sans-serif; color:#17181c;">
+    <!-- topbar -->
+    <div style="background:#fff; border-bottom:1px solid #e3e5ea; padding:14px 18px; display:flex; align-items:center; gap:14px;">
+      <img src="assets/hddirekt-logo.png" alt="HD Direkt" style="height:22px; width:auto;">
+      <div style="flex:1; height:34px; background:#f5f6f8; border:1px solid #e8eaee; border-radius:9px; display:flex; align-items:center; padding:0 12px; gap:8px; color:#9aa0a8; font-size:13px;">
+        <span style="width:14px;height:14px;border:1.6px solid #c4c8cf;border-radius:50%;display:inline-block;position:relative;"></span>
+        Keresés a feladatok közt…
+      </div>
+      <div style="display:flex; align-items:center;">
+        <div style="width:30px;height:30px;border-radius:50%;background:#193b69;color:#fff;font:600 11px 'Inter';display:flex;align-items:center;justify-content:center;border:2px solid #fff;">ÉN</div>
+        <div style="width:30px;height:30px;border-radius:50%;background:#d85c38;color:#fff;font:600 11px 'Inter';display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-8px;">KM</div>
+        <div style="width:30px;height:30px;border-radius:50%;background:#5868c9;color:#fff;font:600 11px 'Inter';display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-8px;">AN</div>
+        <div style="width:30px;height:30px;border-radius:50%;background:#eceef1;color:#6d717a;font:600 10px 'Inter';display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-8px;">+3</div>
+      </div>
+      <button style="border:none;background:#f8991c;color:#fff;font:600 13px 'Inter';padding:8px 14px;border-radius:9px;cursor:pointer;box-shadow:0 2px 6px rgba(248,153,28,.35);">+ Új</button>
+    </div>
+    <!-- tabs -->
+    <div style="background:#fff;padding:0 18px;display:flex;gap:22px;border-bottom:1px solid #e3e5ea;">
+      <div style="padding:11px 0;font:600 13px 'Inter';color:#17181c;border-bottom:2px solid #f8991c;">Saját nézet</div>
+      <div style="padding:11px 0;font:500 13px 'Inter';color:#9aa0a8;">Csapat</div>
+      <div style="padding:11px 0;font:500 13px 'Inter';color:#9aa0a8;">Minden jogosult</div>
+      <div style="padding:11px 0;font:500 13px 'Inter';color:#9aa0a8;">Naptár</div>
+    </div>
+    <!-- KPI -->
+    <div style="display:flex;gap:10px;padding:14px 18px;">
+      <div style="flex:1;background:#fff;border:1px solid #e3e5ea;border-radius:11px;padding:11px 13px;">
+        <div style="font:700 22px 'Inter';color:#17181c;">12</div>
+        <div style="font:500 11px 'Inter';color:#6d717a;margin-top:2px;">Nyitott</div>
+      </div>
+      <div style="flex:1;background:#fff;border:1px solid #e3e5ea;border-radius:11px;padding:11px 13px;">
+        <div style="font:700 22px 'Inter';color:#17181c;">5</div>
+        <div style="font:500 11px 'Inter';color:#6d717a;margin-top:2px;">Folyamatban</div>
+      </div>
+      <div style="flex:1;background:#fff;border:1px solid #f3d2cb;border-radius:11px;padding:11px 13px;">
+        <div style="font:700 22px 'Inter';color:#d64545;">3</div>
+        <div style="font:500 11px 'Inter';color:#6d717a;margin-top:2px;">Kritikus</div>
+      </div>
+      <div style="flex:1;background:#faf6ff;border:1px solid #e7daf7;border-radius:11px;padding:11px 13px;">
+        <div style="font:700 22px 'Inter';color:#8757e8;">2</div>
+        <div style="font:500 11px 'Inter';color:#6d717a;margin-top:2px;">AI javaslat</div>
+      </div>
+    </div>
+    <!-- board -->
+    <div style="display:flex;gap:12px;padding:4px 18px 18px;">
+      <!-- col -->
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;"></span>
+          <span style="font:600 12px 'Inter';color:#17181c;">Új</span>
+          <span style="font:600 11px 'Inter';color:#9aa0a8;">4</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e3e5ea;border-radius:11px;padding:12px;margin-bottom:9px;box-shadow:0 1px 2px rgba(20,24,40,.04);">
+          <div style="display:flex;gap:6px;margin-bottom:8px;">
+            <span style="font:600 10px 'Inter';color:#d64545;background:#fdecec;padding:3px 7px;border-radius:6px;">KRITIKUS</span>
+            <span style="font:600 10px 'Inter';color:#6d717a;background:#f0f1f4;padding:3px 7px;border-radius:6px;">case</span>
+          </div>
+          <div style="font:600 13px 'Inter';color:#17181c;line-height:1.35;margin-bottom:9px;">Új ügy ellenőrzése</div>
+          <div style="height:5px;background:#eceef1;border-radius:3px;overflow:hidden;margin-bottom:9px;"><div style="width:30%;height:100%;background:#f8991c;border-radius:3px;"></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="width:24px;height:24px;border-radius:50%;background:#193b69;color:#fff;font:600 9px 'Inter';display:flex;align-items:center;justify-content:center;">ÉN</div>
+            <span style="font:500 11px 'Inter';color:#d64545;">Ma 10:00</span>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e3e5ea;border-radius:11px;padding:12px;box-shadow:0 1px 2px rgba(20,24,40,.04);">
+          <div style="display:flex;gap:6px;margin-bottom:8px;">
+            <span style="font:600 10px 'Inter';color:#c2750a;background:#fdf2e2;padding:3px 7px;border-radius:6px;">MAGAS</span>
+          </div>
+          <div style="font:600 13px 'Inter';color:#17181c;line-height:1.35;margin-bottom:9px;">Hiányzó adat pótlása</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="width:24px;height:24px;border-radius:50%;background:#d85c38;color:#fff;font:600 9px 'Inter';display:flex;align-items:center;justify-content:center;">KM</div>
+            <span style="font:500 11px 'Inter';color:#6d717a;">Ma 14:30</span>
+          </div>
+        </div>
+      </div>
+      <!-- col -->
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:9px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#8757e8;"></span>
+          <span style="font:600 12px 'Inter';color:#17181c;">AI előkészítés</span>
+          <span style="font:600 11px 'Inter';color:#9aa0a8;">2</span>
+        </div>
+        <div style="background:linear-gradient(180deg,#fdfbff,#fff);border:1px solid #e7daf7;border-radius:11px;padding:12px;box-shadow:0 1px 2px rgba(20,24,40,.04);">
+          <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center;">
+            <span style="font:600 10px 'Inter';color:#8757e8;background:#f3ecfd;padding:3px 7px;border-radius:6px;">✦ AI</span>
+            <span style="font:500 10px 'Inter';color:#8757e8;">fut…</span>
+          </div>
+          <div style="font:600 13px 'Inter';color:#17181c;line-height:1.35;margin-bottom:9px;">Ellenőrző lista előkészítése</div>
+          <div style="height:5px;background:#eee6fa;border-radius:3px;overflow:hidden;margin-bottom:9px;"><div style="width:40%;height:100%;background:#8757e8;border-radius:3px;"></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="width:24px;height:24px;border-radius:50%;background:#193b69;color:#fff;font:600 9px 'Inter';display:flex;align-items:center;justify-content:center;">ÉN</div>
+            <span style="font:500 11px 'Inter';color:#6d717a;">Ma 17:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DIRECTION B — LINEAR CRISP ================= -->
+<div style="position:absolute; left:660px; top:0px; width:600px;">
+  <div data-drags-parent="1" style="font:600 13px 'Inter',sans-serif; color:#6d717a; margin-bottom:10px; letter-spacing:.04em; text-transform:uppercase;">B · Linear Crisp</div>
+  <div style="background:#fbfbfc; border:1px solid #e6e7ea; border-radius:8px; box-shadow:0 1px 3px rgba(20,24,40,.06); overflow:hidden; font-family:'Inter',sans-serif; color:#1a1b1f;">
+    <!-- topbar -->
+    <div style="background:#fff;border-bottom:1px solid #ececef;padding:11px 16px;display:flex;align-items:center;gap:12px;">
+      <img src="assets/hddirekt-logo.png" alt="HD Direkt" style="height:18px;width:auto;">
+      <div style="width:1px;height:18px;background:#e6e7ea;"></div>
+      <span style="font:700 13px 'Inter';color:#1a1b1f;">Feladatközpont</span>
+      <div style="flex:1;"></div>
+      <div style="font:500 11px 'IBM Plex Mono';color:#9aa0a8;background:#f5f6f7;border:1px solid #ececef;padding:4px 8px;border-radius:6px;">⌘K</div>
+      <button style="border:1px solid #e6e7ea;background:#fff;color:#1a1b1f;font:600 12px 'Inter';padding:6px 11px;border-radius:6px;cursor:pointer;">+ Feladat</button>
+    </div>
+    <!-- tabs -->
+    <div style="background:#fff;padding:0 16px;display:flex;gap:18px;border-bottom:1px solid #ececef;">
+      <div style="padding:9px 0;font:600 12px 'Inter';color:#1a1b1f;border-bottom:1.5px solid #1a1b1f;">Saját</div>
+      <div style="padding:9px 0;font:500 12px 'Inter';color:#9aa0a8;">Csapat</div>
+      <div style="padding:9px 0;font:500 12px 'Inter';color:#9aa0a8;">Mind</div>
+      <div style="padding:9px 0;font:500 12px 'Inter';color:#9aa0a8;">Automatizmus</div>
+    </div>
+    <!-- KPI inline -->
+    <div style="display:flex;gap:18px;padding:11px 16px;border-bottom:1px solid #ececef;background:#fff;">
+      <div style="display:flex;align-items:baseline;gap:6px;"><span style="font:700 15px 'Inter';">12</span><span style="font:500 11px 'Inter';color:#9aa0a8;">Nyitott</span></div>
+      <div style="display:flex;align-items:baseline;gap:6px;"><span style="font:700 15px 'Inter';">5</span><span style="font:500 11px 'Inter';color:#9aa0a8;">Folyamatban</span></div>
+      <div style="display:flex;align-items:baseline;gap:6px;"><span style="font:700 15px 'Inter';color:#e5484d;">3</span><span style="font:500 11px 'Inter';color:#9aa0a8;">Kritikus</span></div>
+      <div style="display:flex;align-items:baseline;gap:6px;"><span style="font:700 15px 'Inter';color:#8e4ec6;">2</span><span style="font:500 11px 'Inter';color:#9aa0a8;">AI</span></div>
+    </div>
+    <!-- board -->
+    <div style="display:flex;gap:1px;background:#ececef;">
+      <!-- col -->
+      <div style="flex:1;background:#fbfbfc;padding:11px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <span style="font:600 11px 'Inter';color:#1a1b1f;text-transform:uppercase;letter-spacing:.03em;">Új</span>
+          <span style="font:600 10px 'IBM Plex Mono';color:#9aa0a8;background:#f0f1f3;padding:1px 5px;border-radius:4px;">4</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e6e7ea;border-radius:6px;padding:10px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+            <span style="width:7px;height:7px;border-radius:2px;background:#e5484d;"></span>
+            <span style="font:500 10px 'IBM Plex Mono';color:#9aa0a8;">CASE · SRC-001</span>
+          </div>
+          <div style="font:600 12.5px 'Inter';color:#1a1b1f;line-height:1.35;margin-bottom:8px;">Új ügy ellenőrzése</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;gap:5px;align-items:center;">
+              <div style="width:20px;height:20px;border-radius:5px;background:#193b69;color:#fff;font:600 8px 'Inter';display:flex;align-items:center;justify-content:center;">ÉN</div>
+              <span style="font:500 10px 'IBM Plex Mono';color:#e5484d;">10:00</span>
+            </div>
+            <span style="font:500 10px 'IBM Plex Mono';color:#9aa0a8;">30%</span>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e6e7ea;border-radius:6px;padding:10px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+            <span style="width:7px;height:7px;border-radius:2px;background:#f76808;"></span>
+            <span style="font:500 10px 'IBM Plex Mono';color:#9aa0a8;">DOC · SRC-002</span>
+          </div>
+          <div style="font:600 12.5px 'Inter';color:#1a1b1f;line-height:1.35;margin-bottom:8px;">Hiányzó adat pótlása</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="width:20px;height:20px;border-radius:5px;background:#d85c38;color:#fff;font:600 8px 'Inter';display:flex;align-items:center;justify-content:center;">KM</div>
+            <span style="font:500 10px 'IBM Plex Mono';color:#9aa0a8;">14:30</span>
+          </div>
+        </div>
+      </div>
+      <!-- col -->
+      <div style="flex:1;background:#fbfbfc;padding:11px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <span style="font:600 11px 'Inter';color:#1a1b1f;text-transform:uppercase;letter-spacing:.03em;">AI előkészítés</span>
+          <span style="font:600 10px 'IBM Plex Mono';color:#9aa0a8;background:#f0f1f3;padding:1px 5px;border-radius:4px;">2</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e6e7ea;border-left:2px solid #8e4ec6;border-radius:6px;padding:10px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+            <span style="font:600 9px 'IBM Plex Mono';color:#8e4ec6;">✦ AGENT</span>
+            <span style="font:500 9px 'IBM Plex Mono';color:#8e4ec6;background:#f7f0fc;padding:1px 5px;border-radius:4px;">RUNNING</span>
+          </div>
+          <div style="font:600 12.5px 'Inter';color:#1a1b1f;line-height:1.35;margin-bottom:8px;">Ellenőrző lista előkészítése</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="width:20px;height:20px;border-radius:5px;background:#193b69;color:#fff;font:600 8px 'Inter';display:flex;align-items:center;justify-content:center;">ÉN</div>
+            <span style="font:500 10px 'IBM Plex Mono';color:#9aa0a8;">40%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DIRECTION C — WARM PREMIUM ================= -->
+<div style="position:absolute; left:1320px; top:0px; width:600px;">
+  <div data-drags-parent="1" style="font:600 13px 'Inter',sans-serif; color:#6d717a; margin-bottom:10px; letter-spacing:.04em; text-transform:uppercase;">C · Warm Premium</div>
+  <div style="background:#f7f4f0; border-radius:18px; box-shadow:0 4px 20px rgba(80,50,20,.10); overflow:hidden; font-family:'Plus Jakarta Sans',sans-serif; color:#211c16;">
+    <!-- topbar with warm gradient -->
+    <div style="background:linear-gradient(120deg,#fff7ee,#fff);border-bottom:1px solid #efe7dc;padding:15px 20px;display:flex;align-items:center;gap:14px;">
+      <img src="assets/hddirekt-logo.png" alt="HD Direkt" style="height:24px;width:auto;">
+      <div style="flex:1;"></div>
+      <div style="display:flex;">
+        <div style="width:32px;height:32px;border-radius:50%;background:#193b69;color:#fff;font:700 11px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;border:2px solid #fff;">ÉN</div>
+        <div style="width:32px;height:32px;border-radius:50%;background:#d85c38;color:#fff;font:700 11px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-9px;">KM</div>
+        <div style="width:32px;height:32px;border-radius:50%;background:#eadfd0;color:#8a7a64;font:700 10px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;border:2px solid #fff;margin-left:-9px;">+4</div>
+      </div>
+      <button style="border:none;background:linear-gradient(135deg,#f8991c,#ffb24a);color:#fff;font:700 13px 'Plus Jakarta Sans';padding:10px 16px;border-radius:11px;cursor:pointer;box-shadow:0 4px 12px rgba(248,153,28,.4);">+ Új feladat</button>
+    </div>
+    <!-- title + tabs -->
+    <div style="padding:16px 20px 0;">
+      <div style="font:800 19px 'Plus Jakarta Sans';color:#211c16;margin-bottom:13px;">Saját feladataim</div>
+      <div style="display:flex;gap:8px;">
+        <div style="font:700 12px 'Plus Jakarta Sans';color:#fff;background:#211c16;padding:7px 13px;border-radius:9px;">Saját</div>
+        <div style="font:600 12px 'Plus Jakarta Sans';color:#8a7a64;background:#fff;padding:7px 13px;border-radius:9px;border:1px solid #efe7dc;">Csapat</div>
+        <div style="font:600 12px 'Plus Jakarta Sans';color:#8a7a64;background:#fff;padding:7px 13px;border-radius:9px;border:1px solid #efe7dc;">Mind</div>
+      </div>
+    </div>
+    <!-- KPI pills -->
+    <div style="display:flex;gap:10px;padding:14px 20px;">
+      <div style="flex:1;background:#fff;border-radius:14px;padding:13px 15px;box-shadow:0 2px 8px rgba(80,50,20,.05);">
+        <div style="font:800 24px 'Plus Jakarta Sans';color:#211c16;">12</div>
+        <div style="font:600 11px 'Plus Jakarta Sans';color:#8a7a64;">Nyitott</div>
+      </div>
+      <div style="flex:1;background:linear-gradient(135deg,#fef0e8,#fff6f2);border-radius:14px;padding:13px 15px;box-shadow:0 2px 8px rgba(80,50,20,.05);">
+        <div style="font:800 24px 'Plus Jakarta Sans';color:#d64545;">3</div>
+        <div style="font:600 11px 'Plus Jakarta Sans';color:#8a7a64;">Kritikus</div>
+      </div>
+      <div style="flex:1;background:linear-gradient(135deg,#f4ecfd,#faf6ff);border-radius:14px;padding:13px 15px;box-shadow:0 2px 8px rgba(80,50,20,.05);">
+        <div style="font:800 24px 'Plus Jakarta Sans';color:#8757e8;">2</div>
+        <div style="font:600 11px 'Plus Jakarta Sans';color:#8a7a64;">AI javaslat</div>
+      </div>
+    </div>
+    <!-- board -->
+    <div style="display:flex;gap:13px;padding:0 20px 20px;">
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;padding-left:2px;">
+          <span style="font:700 13px 'Plus Jakarta Sans';color:#211c16;">Új</span>
+          <span style="font:700 10px 'Plus Jakarta Sans';color:#a8967e;background:#efe7dc;padding:2px 7px;border-radius:20px;">4</span>
+        </div>
+        <div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:11px;box-shadow:0 3px 10px rgba(80,50,20,.06);border-top:3px solid #d64545;">
+          <div style="font:700 11px 'Plus Jakarta Sans';color:#d64545;margin-bottom:8px;">● Kritikus</div>
+          <div style="font:700 14px 'Plus Jakarta Sans';color:#211c16;line-height:1.35;margin-bottom:11px;">Új ügy ellenőrzése</div>
+          <div style="height:6px;background:#f0ece5;border-radius:4px;overflow:hidden;margin-bottom:11px;"><div style="width:30%;height:100%;background:linear-gradient(90deg,#f8991c,#ffb24a);border-radius:4px;"></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="width:26px;height:26px;border-radius:50%;background:#193b69;color:#fff;font:700 9px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;">ÉN</div>
+            <span style="font:700 11px 'Plus Jakarta Sans';color:#d64545;background:#fdecec;padding:3px 9px;border-radius:20px;">Ma 10:00</span>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:11px;padding-left:2px;">
+          <span style="font:700 13px 'Plus Jakarta Sans';color:#211c16;">AI előkészítés</span>
+          <span style="font:700 10px 'Plus Jakarta Sans';color:#a8967e;background:#efe7dc;padding:2px 7px;border-radius:20px;">2</span>
+        </div>
+        <div style="background:linear-gradient(180deg,#fdfbff,#fff);border-radius:14px;padding:14px;box-shadow:0 3px 10px rgba(80,50,20,.06);border-top:3px solid #8757e8;">
+          <div style="font:700 11px 'Plus Jakarta Sans';color:#8757e8;margin-bottom:8px;">✦ AI · fut</div>
+          <div style="font:700 14px 'Plus Jakarta Sans';color:#211c16;line-height:1.35;margin-bottom:11px;">Ellenőrző lista előkészítése</div>
+          <div style="height:6px;background:#eee6fa;border-radius:4px;overflow:hidden;margin-bottom:11px;"><div style="width:40%;height:100%;background:linear-gradient(90deg,#8757e8,#b18cf0);border-radius:4px;"></div></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="width:26px;height:26px;border-radius:50%;background:#193b69;color:#fff;font:700 9px 'Plus Jakarta Sans';display:flex;align-items:center;justify-content:center;">ÉN</div>
+            <span style="font:700 11px 'Plus Jakarta Sans';color:#8757e8;background:#f3ecfd;padding:3px 9px;border-radius:20px;">Ma 17:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- caption -->
+<div style="position:absolute; left:0px; top:780px; width:1260px; font-family:'Inter',sans-serif; color:#6d717a; font-size:13px; line-height:1.6;">
+  <strong style="color:#17181c;">Három irány ugyanazon az adaton.</strong>　
+  <strong>A · Soft Trello</strong> — meleg-semleges, lágy árnyékok, ismerős kanban érzés.　
+  <strong>B · Linear Crisp</strong> — sűrű, éles, monospace meta, fejlesztői/adat-fókusz.　
+  <strong>C · Warm Premium</strong> — tágas, prémium, meleg tónus, lekerekített pill-ek.
+  &nbsp;— Írd meg melyik tetszik (vagy keverék), és abból építem ki a teljes appot.
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,109 @@
+{
+  "incoming_to_dashboard": {
+    "task_center_set_tasks": {
+      "payload": {
+        "tasks": "TaskCard[]"
+      }
+    },
+    "task_center_set_users": {
+      "payload": {
+        "users": "User[]"
+      }
+    },
+    "task_center_set_board_config": {
+      "payload": {
+        "board": "BoardConfig"
+      }
+    },
+    "task_center_refresh": {
+      "payload": {}
+    },
+    "task_center_set_current_user": {
+      "payload": {
+        "user_id": "uuid",
+        "email": "string",
+        "name": "string"
+      }
+    }
+  },
+  "outgoing_from_dashboard": {
+    "task_center_ready": {
+      "payload": {
+        "version": "string"
+      }
+    },
+    "task_center_view_change": {
+      "payload": {
+        "view": "mine|team|all|calendar|automations|settings"
+      }
+    },
+    "task_center_select": {
+      "payload": {
+        "task_id": "uuid",
+        "task": "TaskCard"
+      }
+    },
+    "task_center_status_change": {
+      "payload": {
+        "task_id": "uuid",
+        "status_key": "string",
+        "old_status_key": "string"
+      }
+    },
+    "task_center_update_field": {
+      "payload": {
+        "task_id": "uuid",
+        "key": "string",
+        "value": "any"
+      }
+    },
+    "task_center_create_task": {
+      "payload": {
+        "task": "TaskCard draft"
+      }
+    },
+    "task_center_update_task": {
+      "payload": {
+        "task": "TaskCard"
+      }
+    },
+    "task_center_comment": {
+      "payload": {
+        "task_id": "uuid",
+        "body": "string"
+      }
+    },
+    "task_center_notify": {
+      "payload": {
+        "task_id": "uuid",
+        "recipient_user_id": "uuid|null"
+      }
+    },
+    "task_center_open_source": {
+      "payload": {
+        "task_id": "uuid",
+        "source_type": "string",
+        "source_url": "string|null",
+        "source_pk": "string|null"
+      }
+    },
+    "task_center_queue_agent": {
+      "payload": {
+        "task_id": "uuid",
+        "agent_key": "string",
+        "job_type": "string"
+      }
+    },
+    "task_center_bulk_status_change": {
+      "payload": {
+        "task_ids": "uuid[]",
+        "status_key": "string"
+      }
+    },
+    "task_center_user_filter": {
+      "payload": {
+        "user_id": "uuid|string"
+      }
+    }
+  }
+}

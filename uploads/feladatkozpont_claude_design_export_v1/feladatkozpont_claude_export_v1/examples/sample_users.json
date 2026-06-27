@@ -1,0 +1,6 @@
+[
+  {"id":"me","name":"Én","initials":"ÉN","color":"#193b69","role":"Saját user","online":true},
+  {"id":"gb","name":"Gál Balázs","initials":"GB","color":"#193b69","role":"Board member","online":true},
+  {"id":"km","name":"Kovács Míra","initials":"KM","color":"#d85c38","role":"Board member","online":true},
+  {"id":"an","name":"Admin Nóra","initials":"AN","color":"#5868c9","role":"Jóváhagyó","online":false}
+]

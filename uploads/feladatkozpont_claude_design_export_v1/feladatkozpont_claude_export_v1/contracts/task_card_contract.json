@@ -1,0 +1,36 @@
+{
+  "task_card": {
+    "task_id": "uuid or string",
+    "board_id": "uuid",
+    "title": "string, required",
+    "description": "string|null",
+    "status": "new|in_progress|waiting|approval_wait|ai_preparing|done",
+    "priority": "critical|high|normal|low",
+    "module_key": "case|document|partner|finance|operation|ai|general",
+    "assignee": {
+      "member_id": "uuid|null",
+      "external_user_key": "string|null",
+      "name": "string",
+      "initials": "string",
+      "color": "#hex"
+    },
+    "due_at": "ISO timestamp|null",
+    "due_label": "string|null",
+    "source": {
+      "source_module": "string|null",
+      "source_type": "string|null",
+      "source_id": "string|null",
+      "source_url": "string|null",
+      "source_payload": "object"
+    },
+    "tags": ["string"],
+    "progress": "0-100 integer",
+    "checklist_total": "integer",
+    "checklist_done": "integer",
+    "comment_count": "integer",
+    "ai_state": "none|suggested|queued|running|done|error",
+    "sort_order": "number",
+    "created_at": "ISO timestamp",
+    "updated_at": "ISO timestamp"
+  }
+}

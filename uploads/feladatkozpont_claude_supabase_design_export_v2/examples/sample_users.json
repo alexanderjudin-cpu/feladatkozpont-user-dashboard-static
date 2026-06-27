@@ -1,0 +1,44 @@
+[
+  {
+    "user_id": "00000000-0000-0000-0000-000000000001",
+    "email": "user1@example.local",
+    "name": "Gál Balázs",
+    "initials": "GB",
+    "color": "#193b69",
+    "role": "owner",
+    "online": true,
+    "can_view": true,
+    "can_create": true,
+    "can_edit_all": true,
+    "can_manage_board": true,
+    "sort_order": 10
+  },
+  {
+    "user_id": "00000000-0000-0000-0000-000000000002",
+    "email": "user2@example.local",
+    "name": "Kovács Míra",
+    "initials": "KM",
+    "color": "#d85c38",
+    "role": "member",
+    "online": true,
+    "can_view": true,
+    "can_create": true,
+    "can_edit_all": false,
+    "can_manage_board": false,
+    "sort_order": 20
+  },
+  {
+    "user_id": "00000000-0000-0000-0000-000000000003",
+    "email": "user3@example.local",
+    "name": "Admin Nóra",
+    "initials": "AN",
+    "color": "#5868c9",
+    "role": "manager",
+    "online": false,
+    "can_view": true,
+    "can_create": true,
+    "can_edit_all": true,
+    "can_manage_board": false,
+    "sort_order": 30
+  }
+]
